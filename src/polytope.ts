@@ -5,51 +5,51 @@ import { Vector4, Vector3, Geometry, VertexColors, Matrix4 } from "three";
 const EPSILON = 1.0e-6;
 
 //誤差を除いて等しい
-function eql(a:number, b:number){
-    return Math.abs(a-b) < EPSILON;
+function eql(a: number, b: number) {
+    return Math.abs(a - b) < EPSILON;
 }
 
 // ４成分の配列の配列からVector4の配列を作る。
-function vector4list(numberList: number[][]): Vector4[]{
+function vector4list(numberList: number[][]): Vector4[] {
     const len = numberList.length;
-    const veclist: Vector4[]=new Array(len);
-    for(let i=0; i < len; i++){
+    const veclist: Vector4[] = new Array(len);
+    for (let i = 0; i < len; i++) {
         veclist[i] = new Vector4(numberList[i][0], numberList[i][1], numberList[i][2], numberList[i][3]);
     }
     return veclist;
 }
 
 //４ベクトルの配列のすべての要素を規格化
-function normalize(vectors: Vector4[]){
-    for(let v of vectors){
+function normalize(vectors: Vector4[]) {
+    for (let v of vectors) {
         v.normalize();
     }
 }
 
 //４ベクトル２つの間の距離
-function distance(v1:Vector4, v2:Vector4): number{
-    return new Vector4().subVectors(v1,v2).length();
+function distance(v1: Vector4, v2: Vector4): number {
+    return new Vector4().subVectors(v1, v2).length();
 }
 
 // 0から(n-1)までの整数を全体集合とする。その部分集合の包含関係をチェックするためのクラス。
-class SubsetChecker{
-    n:number;
+class SubsetChecker {
+    n: number;
     elements: boolean[];
-    constructor(n:number){
+    constructor(n: number) {
         this.n = n;
-        this.elements= new Array(n).fill(false);
+        this.elements = new Array(n).fill(false);
     }
-    clear(){
+    clear() {
         this.elements.fill(false);
     }
-    setElements(set: number[]){
-        for(let i of set){
-            this.elements[i]=true
+    setElements(set: number[]) {
+        for (let i of set) {
+            this.elements[i] = true
         }
     }
-    ifSubset(set: number[]){
-        for(let i of set){
-            if(!this.elements[i]){
+    ifSubset(set: number[]) {
+        for (let i of set) {
+            if (!this.elements[i]) {
                 return false;
             }
         }
@@ -83,15 +83,15 @@ function polyhedronFaces(faceList: number[][]): THREE.Face3[] {
 // 4次元の回転行列を作る。angle はラジアン。direction は10進数二桁の数字。
 // 方向はx,y,z,w が0,1,2,3
 // xyなら01
-export function rotationMatrix4(angle: number, direction: number): THREE.Matrix4{
+export function rotationMatrix4(angle: number, direction: number): THREE.Matrix4 {
     const cos_a = Math.cos(angle);
     const sin_a = Math.sin(angle);
     const array = new Array(16).fill(0); // 0で初期化
     const d2 = direction % 10;
-    const d1 = (direction - d2)/10;
+    const d1 = (direction - d2) / 10;
     //とりあえず、単位行列を作る。
-    for(let i=0; i<4; i++){
-        array[i+4*i]=1;
+    for (let i = 0; i < 4; i++) {
+        array[i + 4 * i] = 1;
     }
     array[d1 + 4 * d1] = cos_a;
     array[d2 + 4 * d2] = cos_a;
@@ -105,22 +105,22 @@ class Projector {
     ey: Vector4;
     ez: Vector4;
     ew: Vector4;
-    constructor(){
+    constructor() {
         this.identity();
     }
-    identity(){
+    identity() {
         this.ex = new Vector4(1, 0, 0, 0);
         this.ey = new Vector4(0, 1, 0, 0);
         this.ez = new Vector4(0, 0, 1, 0);
         this.ew = new Vector4(0, 0, 0, 1);
     }
     // v4を射影した後の値をv3に代入する。
-    project(v3: Vector3, v4: Vector4){
+    project(v3: Vector3, v4: Vector4) {
         v3.set(this.ex.dot(v4), this.ey.dot(v4), this.ez.dot(v4));
     }
     // 胞の法線ベクトルを入れて見えるか否かを返す。
     ifVisible(normal: Vector4): boolean {
-        return this.ew.dot(normal)>0;
+        return this.ew.dot(normal) > 0;
     }
     applyMatrix4(m: THREE.Matrix4) {
         this.ex.applyMatrix4(m);
@@ -130,18 +130,20 @@ class Projector {
     }
 }
 
+const colorTable = [new THREE.Color(1.0, 0.6, 1.0), new THREE.Color(0.87, 0.87, 0.), new THREE.Color(0.3, 1.0, 1.0), new THREE.Color(1.0, 0.6, 0.4), new THREE.Color(0.5, 1.0, 0.5), new THREE.Color(0.7, 0.7, 1.0), new THREE.Color(1.0, 0.8, 0.4), new THREE.Color(0.4, 0.8, 1.0), new THREE.Color(0.85, 0.6, 1.0), new THREE.Color(1.0, 0.4, 0.8), new THREE.Color(0.4, 1.0, 0.8)];
+
 // ４次元中の３次元多面体のクラス。４次元多胞体の胞を表すのに使う。
 export class Facet {
     vertices: Vector4[];
     faces: number[][];
     normal: Vector4;//規格化されている。
     triangleVertices: Vector4[]; //geometryに使うための頂点
-//    face3List: THREE.Face3[];  //geometryに使うためのFace3のリスト
+    //    face3List: THREE.Face3[];  //geometryに使うためのFace3のリスト
     geometry: THREE.Geometry; //geometry
     mesh: THREE.Mesh;
     projector: Projector;
     // 普通にgeometryを作る。
-    makeSolidGeometry(){
+    makeSolidGeometry() {
         this.geometry = new Geometry();
         this.triangleVertices = this.vertices;
         this.geometry.faces = polyhedronFaces(this.faces);
@@ -150,7 +152,7 @@ export class Facet {
         this.makeMesh();
     }
     // 枠のgeometryを作る。
-    makeFrameGeometry(ratio: number = 0.8) {
+    makeFrameGeometry(ratio: number = 0.7) {
         const frameVertices = this.vertices.slice();  //配列をコピー
         const frameFaces: THREE.Face3[] = [];
         for (let f of this.faces) {
@@ -184,35 +186,37 @@ export class Facet {
         this.projectVertices();
         this.makeMesh();
     }
-    initGeometryVertices(){
-        const vertices3: Vector3[]= new Array(this.triangleVertices.length);
-        for(let i=0;i<this.triangleVertices.length;i++){
-            vertices3[i]=new Vector3();
+    // とりあえず３次元頂点を意味のない値で初期化。
+    initGeometryVertices() {
+        const vertices3: Vector3[] = new Array(this.triangleVertices.length);
+        for (let i = 0; i < this.triangleVertices.length; i++) {
+            vertices3[i] = new Vector3();
         }
         this.geometry.vertices = vertices3;
     }
     // 射影した頂点を作る。
-    projectVertices(){
-        for(let i=0;i<this.triangleVertices.length;i++){
-            this.projector.project(this.geometry.vertices[i],this.triangleVertices[i]);
+    projectVertices() {
+        for (let i = 0; i < this.triangleVertices.length; i++) {
+            this.projector.project(this.geometry.vertices[i], this.triangleVertices[i]);
         }
         this.geometry.verticesNeedUpdate = true;
         this.geometry.computeFaceNormals();
     }
     // 胞が見える方にあるかのチェック
-    checkVisibility(){
+    checkVisibility() {
         this.mesh.visible = this.projector.ifVisible(this.normal);
     }
     // メッシュを作る
-    makeMesh(){
-        const material = new THREE.MeshPhongMaterial({ color: 0x22aa11, side: THREE.DoubleSide, specular: 0xaaaaaa, flatShading: true });
+    makeMesh() {
+        const material = new THREE.MeshPhongMaterial({side: THREE.DoubleSide, specular: 0xaaaaaa, flatShading: true });
+        material.color = colorTable[this.faces.length % 11];
         this.mesh = new THREE.Mesh(this.geometry, material);
     }
 }
 
 
 
-export class Polytope{
+export class Polytope {
     vertices: Vector4[]; //頂点
     faces: number[][];  //面
     facetList: Facet[];  //胞のリスト
@@ -222,14 +226,14 @@ export class Polytope{
 
     // JSONからそのまま読み込んだObjectから作って必要な初期化やる。
     // type はSolidかFrame
-    initFromPrePolytope(prePolytope:Object, type: string = "Solid"){
+    initFromPrePolytope(prePolytope: Object, type: string = "Solid") {
         this.readJSONFile(prePolytope);
         this.initProjector();
         this.makeFacetList();
         this.separate();
-        if(type == "Solid"){
+        if (type == "Solid") {
             this.makeSolidGeometry();
-        } else if (type == "Frame"){
+        } else if (type == "Frame") {
             this.makeFrameGeometry();
         } else {
             throw 'Type must be "Solid" or "Frame"';
@@ -237,62 +241,62 @@ export class Polytope{
         return this;
     }
     // JSONからそのまま読み込んだObjectから作る。
-    readJSONFile(prePolytope: Object){
+    readJSONFile(prePolytope: Object) {
         this.vertices = vector4list(prePolytope["vertices"]);
         this.faces = prePolytope["faces"];
-        this.facetCenter = vector4list(prePolytope["facetCenter"]);
+        this.facetCenter = vector4list(prePolytope["facetCenters"]);
         normalize(this.vertices);
         normalize(this.facetCenter);
         return this;
     }
 
     // projectorを初期化。
-    initProjector(){
+    initProjector() {
         this.projector = new Projector();
     }
     // 胞のリストを作る。
-    makeFacetList(){
+    makeFacetList() {
         this.initProjector();
         this.facetList = new Array(this.facetCenter.length);
         const facetSetChecker = new SubsetChecker(this.vertices.length);
         // thisのリストと新しく作る頂点のリストのインデックスの対応
         const vertexFacetTable: number[] = new Array(this.vertices.length);
-        for (let i = 0; i < this.facetCenter.length; i++){
+        for (let i = 0; i < this.facetCenter.length; i++) {
             const center = this.facetCenter[i];
             // 胞の中心から最小の距離を求める
-            const cvDistances = this.vertices.map(v => distance(center,v));//中心からの距離の配列
+            const cvDistances = this.vertices.map(v => distance(center, v));//中心からの距離の配列
             const minDistance = Math.min(...cvDistances);//その中で最小のものをとる。
             // 胞の中心からの距離が最小の頂点が胞に属する頂点。
-            const facetVertexList: number[]=[];
-            for(let j=0;j<this.vertices.length;j++){
-                if(eql(minDistance, distance(this.vertices[j],center))){
+            const facetVertexList: number[] = [];
+            for (let j = 0; j < this.vertices.length; j++) {
+                if (eql(minDistance, distance(this.vertices[j], center))) {
                     facetVertexList.push(j);
                 }
             }
             facetSetChecker.clear();
             facetSetChecker.setElements(facetVertexList);
-            const facesInTheFacet:number[]=[];
-            for(let j=0;j<this.faces.length;j++){
-                if(facetSetChecker.ifSubset(this.faces[j])){
+            const facesInTheFacet: number[] = [];
+            for (let j = 0; j < this.faces.length; j++) {
+                if (facetSetChecker.ifSubset(this.faces[j])) {
                     facesInTheFacet.push(j);
                 }
             }
             // 胞ごとに頂点をcloneして頂点のリストを作る。
-            const facetVertices: Vector4[]=new Array(facetVertexList.length);
-            for(let j=0;j<facetVertexList.length;j++){
-                facetVertices[j]=this.vertices[facetVertexList[j]].clone();
-                vertexFacetTable[facetVertexList[j]]=j;//thisと新頂点リストの対応表をつくる。
+            const facetVertices: Vector4[] = new Array(facetVertexList.length);
+            for (let j = 0; j < facetVertexList.length; j++) {
+                facetVertices[j] = this.vertices[facetVertexList[j]].clone();
+                vertexFacetTable[facetVertexList[j]] = j;//thisと新頂点リストの対応表をつくる。
             }
             // 胞に属する面を新しく作る。
-            const facetFaces: number[][]=new Array(facesInTheFacet.length);
+            const facetFaces: number[][] = new Array(facesInTheFacet.length);
             // インデックスの読み替え
-            for(let j=0;j<facesInTheFacet.length;j++){
-                const f=this.faces[facesInTheFacet[j]];
+            for (let j = 0; j < facesInTheFacet.length; j++) {
+                const f = this.faces[facesInTheFacet[j]];
                 const face: number[] = new Array(f.length);
-                for(let k=0;k<f.length;k++){
-                    face[k]=vertexFacetTable[f[k]];
+                for (let k = 0; k < f.length; k++) {
+                    face[k] = vertexFacetTable[f[k]];
                 }
-                facetFaces[j]=face;
+                facetFaces[j] = face;
             }
             // 胞のクラスを作って設定。
             const facet = new Facet();
@@ -301,16 +305,16 @@ export class Polytope{
             facet.normal = center.clone().normalize();
             facet.projector = this.projector;
             // 胞をthisのリストに追加。
-            this.facetList[i]=facet;
+            this.facetList[i] = facet;
         }
         return this;
     }
 
     // 胞同士を話す。ratioは離す量。大きい方が離れる。
-    separate(ratio: number = 0.1){
-        for(let f of this.facetList){
+    separate(ratio: number = 0.1) {
+        for (let f of this.facetList) {
             const direction = f.normal.clone().multiplyScalar(ratio);
-            for(let vertex of f.vertices){
+            for (let vertex of f.vertices) {
                 vertex.add(direction);
                 vertex.normalize();
             }
@@ -352,11 +356,13 @@ export class Polytope{
         }
         return this;
     }
-    applyMatrix4(m: THREE.Matrix4){
+    //projectorの回転。
+    applyMatrix4(m: THREE.Matrix4) {
         this.projector.applyMatrix4(m);
         return this;
     }
-    identityProjector(){
+    //projectorを恒等写像に戻す。
+    identityProjector() {
         this.projector.identity();
         return this;
     }
