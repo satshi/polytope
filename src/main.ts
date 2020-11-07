@@ -6,7 +6,7 @@ import * as pt from "./polytope";
 window.addEventListener("DOMContentLoaded", main);
 
 function main(){
-    fetch("data/c120.json")
+    fetch('data/c16thw.json')
         .then(response => response.json())
         .then(json => {
             init(json);
@@ -51,13 +51,13 @@ function init(prePolytope:Object): void{
     scene.fog = new THREE.Fog(0xffffff, 2, 9);
 
     //４次元回転のための行列
-    const rotation = pt.rotationMatrix4(0.02, 23).multiply(pt.rotationMatrix4(0.02, 12)).multiply(pt.rotationMatrix4(0.02,3));
+    const rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01,3));
     //アニメーションの設定
     const tick = (): void => {
         requestAnimationFrame(tick);
 
-        theObject.rotation.x += 0.02;
-        theObject.rotation.y += 0.02;
+        theObject.rotation.x += 0.01;
+        theObject.rotation.y += 0.01;
         polytope.applyMatrix4(rotation);
         polytope.projectVertices();
         polytope.checkVisibility();
@@ -66,18 +66,3 @@ function init(prePolytope:Object): void{
     };
     tick();
 }
-
-// function initPolytope(fileName: string): pt.Polytope{
-//     const polytope = new pt.Polytope();
-//     polytope.initFromFile(fileName);
-//     return polytope;
-// }
-
-//物体を定義する。
-function makeObject(): THREE.Mesh {
-    const geom: THREE.Geometry = pu.prism(4).frameGeometrize(0.8);
-    const material = new THREE.MeshPhongMaterial({ color: 0x22aa11, side: THREE.DoubleSide, specular: 0xaaaaaa, flatShading:true});
-    const box = new THREE.Mesh(geom, material);
-    return box;
-}
-
