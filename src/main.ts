@@ -1,15 +1,27 @@
 import * as THREE from "three";
+import { AlphaFormat } from "three";
 //import * as pu from "./polygon_util";
 import * as pt from "./polytope";
 
 window.addEventListener("DOMContentLoaded", main);
 
-function main(){
-    fetch('data/c16thw.json')
+//document.getElementById('polytopeform').addEventListener('submit',main)
+
+function main(event){
+    const dataDir = 'data/';
+    const dataExt = '.json';
+    //const basename = (<HTMLInputElement> document.getElementById("polytopename")).value;
+    const basename = 'c120thww';
+    const fullname = dataDir + basename + dataExt;
+    console.log(fullname);
+    const contents = document.getElementById('contents');
+    contents.textContent = 'お待ち下さい';
+    fetch(fullname)
         .then(response => response.json())
         .then(json => {
             init(json,"Frame");
-        });
+        })
+        .catch((error)=>alert('読み込みに失敗しました：'+ error));
 }
 
 //  画面を初期化し、物体を置き、アニメーションを定義する。
@@ -20,8 +32,6 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     // レンダラーのサイズを設定
     renderer.setSize(1600, 1200);
     renderer.setClearColor(new THREE.Color(0x888888));
-    // canvasをbodyに追加
-    document.body.appendChild(renderer.domElement);
 
     // シーンを作成
     const scene = new THREE.Scene();
@@ -36,6 +46,11 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     polytope.initFromPrePolytope(prePolytope, mode);
     const theObject = polytope.object3D;
     scene.add(theObject);
+
+    // canvasをcontentsに追加
+    const contents = document.getElementById('contents')
+    contents.textContent = '';
+    contents.appendChild(renderer.domElement);
 
     // 平行光源を生成
     const light = new THREE.DirectionalLight(0xffffff);

@@ -132,6 +132,12 @@ class Projector {
 
 const colorTable = [new THREE.Color(1.0, 0.6, 1.0), new THREE.Color(0.87, 0.87, 0.), new THREE.Color(0.3, 1.0, 1.0), new THREE.Color(1.0, 0.6, 0.4), new THREE.Color(0.5, 1.0, 0.5), new THREE.Color(0.7, 0.7, 1.0), new THREE.Color(1.0, 0.8, 0.4), new THREE.Color(0.4, 0.8, 1.0), new THREE.Color(0.85, 0.6, 1.0), new THREE.Color(1.0, 0.4, 0.8), new THREE.Color(0.4, 1.0, 0.8)];
 
+const materialTable = colorTable.map(c => {
+    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0xaaaaaa, flatShading: true });
+    material.color = c;
+    return material;
+});
+
 // ４次元中の３次元多面体のクラス。４次元多胞体の胞を表すのに使う。
 export class Facet {
     vertices: Vector4[];
@@ -208,9 +214,7 @@ export class Facet {
     }
     // メッシュを作る
     makeMesh() {
-        const material = new THREE.MeshPhongMaterial({side: THREE.DoubleSide, specular: 0xaaaaaa, flatShading: true });
-        material.color = colorTable[this.faces.length % 11];
-        this.mesh = new THREE.Mesh(this.geometry, material);
+        this.mesh = new THREE.Mesh(this.geometry, materialTable[this.faces.length % 11]);
     }
 }
 
