@@ -1,6 +1,5 @@
-/// <reference path = "polygon_util.ts" />
 import * as THREE from "three";
-import * as pu from "./polygon_util";
+//import * as pu from "./polygon_util";
 import * as pt from "./polytope";
 
 window.addEventListener("DOMContentLoaded", main);
@@ -9,16 +8,17 @@ function main(){
     fetch('data/c16thw.json')
         .then(response => response.json())
         .then(json => {
-            init(json);
+            init(json,"Frame");
         });
 }
 
 //  画面を初期化し、物体を置き、アニメーションを定義する。
-function init(prePolytope:Object): void{
+// modeは"Solid"または"Frame"
+function init(prePolytope:Object, mode:string="Solid"): void{
     // レンダラーを作成
     const renderer = new THREE.WebGLRenderer();
     // レンダラーのサイズを設定
-    renderer.setSize(800, 600);
+    renderer.setSize(1600, 1200);
     renderer.setClearColor(new THREE.Color(0x888888));
     // canvasをbodyに追加
     document.body.appendChild(renderer.domElement);
@@ -27,13 +27,13 @@ function init(prePolytope:Object): void{
     const scene = new THREE.Scene();
 
     // カメラを作成
-    const camera = new THREE.PerspectiveCamera(45, 800 / 600, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(30, 800 / 600, 0.1, 500);
     camera.position.set(0, 0, 5);
     camera.lookAt(scene.position);
 
     // 物体を作成
     const polytope = new pt.Polytope();
-    polytope.initFromPrePolytope(prePolytope, "Frame");
+    polytope.initFromPrePolytope(prePolytope, mode);
     const theObject = polytope.object3D;
     scene.add(theObject);
 
@@ -48,7 +48,7 @@ function init(prePolytope:Object): void{
     scene.add(ambientLight);
 
     //フォグを生成
-    scene.fog = new THREE.Fog(0xffffff, 2, 9);
+    scene.fog = new THREE.Fog(0xffffff, 2, 8);
 
     //４次元回転のための行列
     const rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01,3));

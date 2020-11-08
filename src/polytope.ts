@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { Vector4, Vector3, Geometry, VertexColors, Matrix4 } from "three";
 
 //小さい数
-const EPSILON = 1.0e-6;
+const EPSILON = 1.0e-5;
 
 //誤差を除いて等しい
 function eql(a: number, b: number) {
