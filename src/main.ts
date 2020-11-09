@@ -3,15 +3,15 @@ import { AlphaFormat } from "three";
 //import * as pu from "./polygon_util";
 import * as pt from "./polytope";
 
-window.addEventListener("DOMContentLoaded", main);
+//window.addEventListener("DOMContentLoaded", main);
 
-//document.getElementById('polytopeform').addEventListener('submit',main)
+document.getElementById("pbtn").addEventListener('click',main)
 
-function main(event){
+function main(){
     const dataDir = 'data/';
     const dataExt = '.json';
-    //const basename = (<HTMLInputElement> document.getElementById("polytopename")).value;
-    const basename = 'c120thww';
+    const basename = (<HTMLInputElement> document.getElementById("polytopename")).value;
+    //const basename = 'c120thww';
     const fullname = dataDir + basename + dataExt;
     console.log(fullname);
     const contents = document.getElementById('contents');
@@ -28,7 +28,7 @@ function main(event){
 // modeは"Solid"または"Frame"
 function init(prePolytope:Object, mode:string="Solid"): void{
     // レンダラーを作成
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({antialias: true});
     // レンダラーのサイズを設定
     renderer.setSize(1600, 1200);
     renderer.setClearColor(new THREE.Color(0x888888));
