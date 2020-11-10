@@ -1,14 +1,22 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
 <body>
-    <input type="checkbox" id="ifframe">面に穴を開ける　
-    
-    <input type="text" id="polytopename">
+    <input type="checkbox" id="ifframe">Frame view　
+    <select id="series">
+        <option value="examples">Simple examples</option>
+        <option value="5">5 cell series</option>
+        <option value="8">8-16 cell series</option>
+        <option value="24">24 cell series</option>
+        <option value="120">120-600 cell series</option>
+        <option value="others">Others</option>
+    </select>
+    <select id="polytope">
+    </select>
     <button type="button" id="pbtn">表示</button>
     <div id="contents">
     </div>
