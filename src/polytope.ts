@@ -133,7 +133,8 @@ class Projector {
 const colorTable = [new THREE.Color(1.0, 0.6, 1.0), new THREE.Color(0.87, 0.87, 0.), new THREE.Color(0.3, 1.0, 1.0), new THREE.Color(1.0, 0.6, 0.4), new THREE.Color(0.5, 1.0, 0.5), new THREE.Color(0.7, 0.7, 1.0), new THREE.Color(1.0, 0.8, 0.4), new THREE.Color(0.4, 0.8, 1.0), new THREE.Color(0.85, 0.6, 1.0), new THREE.Color(1.0, 0.4, 0.8), new THREE.Color(0.4, 1.0, 0.8)];
 
 const materialTable = colorTable.map(c => {
-    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0xaaaaaa, flatShading: true });
+    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0x888888, flatShading: true });
+//    const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide});
     material.color = c;
     return material;
 });
@@ -189,8 +190,8 @@ export class Facet {
         this.triangleVertices = frameVertices;
         this.geometry.faces = frameFaces;
         this.initGeometryVertices();
-        this.projectVertices();
         this.makeMesh();
+        this.projectVertices();
     }
     // とりあえず３次元頂点を意味のない値で初期化。
     initGeometryVertices() {

@@ -11,15 +11,14 @@ function main(){
     const dataDir = 'data/';
     const dataExt = '.json';
     const basename = (<HTMLInputElement> document.getElementById("polytopename")).value;
-    //const basename = 'c120thww';
+    const mode = (<HTMLInputElement> document.getElementById("ifframe")).checked ? "Frame" : "Solid"
     const fullname = dataDir + basename + dataExt;
-    console.log(fullname);
     const contents = document.getElementById('contents');
     contents.textContent = 'お待ち下さい';
     fetch(fullname)
         .then(response => response.json())
         .then(json => {
-            init(json,"Frame");
+            init(json,mode);
         })
         .catch((error)=>alert('読み込みに失敗しました：'+ error));
 }
@@ -30,15 +29,15 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     // レンダラーを作成
     const renderer = new THREE.WebGLRenderer({antialias: true});
     // レンダラーのサイズを設定
-    renderer.setSize(1600, 1200);
+    renderer.setSize(1200, 1200);
     renderer.setClearColor(new THREE.Color(0x888888));
 
     // シーンを作成
     const scene = new THREE.Scene();
 
     // カメラを作成
-    const camera = new THREE.PerspectiveCamera(30, 800 / 600, 0.1, 500);
-    camera.position.set(0, 0, 5);
+    const camera = new THREE.PerspectiveCamera(30, 1200 / 1200, 1, 10);
+    camera.position.set(0, 0, 4);
     camera.lookAt(scene.position);
 
     // 物体を作成
@@ -54,11 +53,11 @@ function init(prePolytope:Object, mode:string="Solid"): void{
 
     // 平行光源を生成
     const light = new THREE.DirectionalLight(0xffffff);
-    light.position.set(1, 1, 1);
+    light.position.set(-3, 3, 3);
     scene.add(light);
 
     // アンビエントライトを生成
-    const ambientLight = new THREE.AmbientLight(new THREE.Color(0x333333));
+    const ambientLight = new THREE.AmbientLight(new THREE.Color(0x444444));
     ambientLight.position.set(1, 1, 1);
     scene.add(ambientLight);
 
@@ -71,8 +70,8 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     const tick = (): void => {
         requestAnimationFrame(tick);
 
-        theObject.rotation.x += 0.01;
-        theObject.rotation.y += 0.01;
+    //    theObject.rotation.x += 0.01;
+    //    theObject.rotation.y += 0.01;
         polytope.applyMatrix4(rotation);
         polytope.projectVertices();
         polytope.checkVisibility();
