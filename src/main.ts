@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { AlphaFormat } from "three";
+//import { AlphaFormat } from "three";
 //import * as pu from "./polygon_util";
 import * as pt from "./polytope";
 
@@ -8,6 +8,7 @@ import * as pt from "./polytope";
 document.getElementById("pbtn").addEventListener('click',main);
 pullDownMenu();
 document.getElementById("series").addEventListener('change',pullDownMenu);
+window.addEventListener('resize', onResize, false);
 
 function main(){
     const dataDir = 'data/';
@@ -17,13 +18,13 @@ function main(){
     const mode = (<HTMLInputElement> document.getElementById("ifframe")).checked ? "Frame" : "Solid"
     const fullname = dataDir + basename + dataExt;
     const contents = document.getElementById('contents');
-    contents.textContent = 'お待ち下さい';
+    contents.textContent = 'Please wait.';
     fetch(fullname)
         .then(response => response.json())
         .then(json => {
             init(json,mode);
         })
-        .catch((error)=>alert('読み込みに失敗しました：'+ error));
+        .catch((error)=>alert('Fail to load data:'+ error));
 }
 
 // プルダウンメニューを作る。
@@ -165,7 +166,7 @@ const polytopeTable ={
         "1100": "c600t",
         "1101": "c600tw",
         "1110": "c120thw",
-        "1111": "c12thww",
+        "1111": "c120thww",
         "snub": "c120s"
     },
     "others": {
@@ -182,22 +183,29 @@ function getBaseName(): string{
     return polytopeTable[series][subclass];
 }
 
+var renderer: THREE.WebGLRenderer;
+var camera: THREE.PerspectiveCamera;
+
 //  画面を初期化し、物体を置き、アニメーションを定義する。
 // modeは"Solid"または"Frame"
 function init(prePolytope:Object, mode:string="Solid"): void{
     // レンダラーを作成
-    const renderer = new THREE.WebGLRenderer({antialias: true});
+    renderer = new THREE.WebGLRenderer({antialias: true});
     // レンダラーのサイズを設定
-    renderer.setSize(1200, 1200);
+    //const size = Math.min(window.innerHeight, window.innerWidth);
+    //renderer.setSize(size, size);
     renderer.setClearColor(new THREE.Color(0x888888));
 
     // シーンを作成
     const scene = new THREE.Scene();
 
     // カメラを作成
-    const camera = new THREE.PerspectiveCamera(30, 1200 / 1200, 1, 10);
+    camera = new THREE.PerspectiveCamera(33, 1, 1, 10);
     camera.position.set(0, 0, 4);
     camera.lookAt(scene.position);
+
+    // 大きさをWindowに合わせて調整
+    onResize();
 
     // 物体を作成
     const polytope = new pt.Polytope();
@@ -207,7 +215,7 @@ function init(prePolytope:Object, mode:string="Solid"): void{
 
     // canvasをcontentsに追加
     const contents = document.getElementById('contents')
-    contents.textContent = '';
+    contents.textContent = null;
     contents.appendChild(renderer.domElement);
 
     // 平行光源を生成
@@ -238,4 +246,18 @@ function init(prePolytope:Object, mode:string="Solid"): void{
         renderer.render(scene, camera);
     };
     tick();
+}
+
+function onResize() {
+    // サイズを取得
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    // レンダラーのサイズを調整する
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(width, height);
+
+    // カメラのアスペクト比を正す
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
 }

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Vector4, Vector3, Geometry, VertexColors, Matrix4 } from "three";
+import { Vector4, Vector3} from "three";
 
 //小さい数
 const EPSILON = 1.0e-5;
@@ -97,7 +97,7 @@ export function rotationMatrix4(angle: number, direction: number): THREE.Matrix4
     array[d2 + 4 * d2] = cos_a;
     array[d1 + 4 * d2] = sin_a;
     array[d2 + 4 * d1] = -sin_a;
-    return new Matrix4().fromArray(array);
+    return new THREE.Matrix4().fromArray(array);
 }
 
 class Projector {
@@ -151,7 +151,7 @@ export class Facet {
     projector: Projector;
     // 普通にgeometryを作る。
     makeSolidGeometry() {
-        this.geometry = new Geometry();
+        this.geometry = new THREE.Geometry();
         this.triangleVertices = this.vertices;
         this.geometry.faces = polyhedronFaces(this.faces);
         this.initGeometryVertices();
@@ -186,7 +186,7 @@ export class Facet {
                 frameFaces.push(new THREE.Face3(f[i], ff[i1], ff[i]));
             }
         }
-        this.geometry = new Geometry();
+        this.geometry = new THREE.Geometry();
         this.triangleVertices = frameVertices;
         this.geometry.faces = frameFaces;
         this.initGeometryVertices();
