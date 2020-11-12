@@ -44,6 +44,11 @@ module.exports = {
                     from: "*.html",
                     to: "",
                     context: 'src'
+                },
+                {
+                    from: "*.css",
+                    to: "",
+                    context: 'src'
                 }
             ]
         }),

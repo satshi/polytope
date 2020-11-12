@@ -24,7 +24,13 @@ function main(){
         .then(json => {
             init(json,mode);
         })
-        .catch((error)=>alert('Fail to load data:'+ error));
+        .catch((error)=>{
+            // const fs = require('fs');
+            // fs.readFile(fullname, 'utf8', function (err, data) {
+            //     init(JSON.parse(data), mode);
+            // });
+            alert('Fail to load data:'+ error);
+        });
 }
 
 // プルダウンメニューを作る。
@@ -252,12 +258,13 @@ function onResize() {
     // サイズを取得
     const width = window.innerWidth;
     const height = window.innerHeight;
+    const size = Math.min(width,height);
 
     // レンダラーのサイズを調整する
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(width, height);
+    renderer.setSize(size, size);
 
     // カメラのアスペクト比を正す
-    camera.aspect = width / height;
+    camera.aspect = 1;
     camera.updateProjectionMatrix();
 }
