@@ -9,8 +9,10 @@ document.getElementById("pbtn").addEventListener('click',main);
 pullDownMenu();
 document.getElementById("series").addEventListener('change',pullDownMenu);
 window.addEventListener('resize', onResize, false);
-document.getElementById("auto").addEventListener('click', autoClick)
-document.getElementById("stop").addEventListener('click', stopClick)
+document.getElementById("auto").addEventListener('click', autoClick);
+document.getElementById("stop").addEventListener('click', stopClick);
+document.getElementById("3D-rotation").addEventListener('click', r3DClick);
+document.getElementById("4D-rotation").addEventListener('click', r4DClick);
 
 function main(){
     const dataDir = 'data/';
@@ -271,18 +273,49 @@ function onResize() {
     camera.updateProjectionMatrix();
 }
 
+////  ボタンクリックのイベントハンドラ
 function autoClick(){
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
+    const rotation3D = document.getElementById("3D-rotation")
+    const rotation4D = document.getElementById("4D-rotation")
     autobutton.className = "button-on";
     stopbutton.className = "button-off";
+    rotation3D.className = "button-off";
+    rotation4D.className = "button-off";
     rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
 }
 
-function stopClick(){
+function stopClick() {
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
+    const rotation3D = document.getElementById("3D-rotation")
+    const rotation4D = document.getElementById("4D-rotation")
     autobutton.className = "button-off";
     stopbutton.className = "button-on";
+    rotation3D.className = "button-off";
+    rotation4D.className = "button-off";
     rotation.identity();
+}
+
+function r3DClick() {
+    const autobutton = document.getElementById("auto");
+    const stopbutton = document.getElementById("stop");
+    const rotation3D = document.getElementById("3D-rotation")
+    const rotation4D = document.getElementById("4D-rotation")
+    autobutton.className = "button-off";
+    stopbutton.className = "button-off";
+    rotation3D.className = "button-on";
+    rotation4D.className = "button-off";
+}
+
+function r4DClick() {
+    const autobutton = document.getElementById("auto");
+    const stopbutton = document.getElementById("stop");
+    const rotation3D = document.getElementById("3D-rotation")
+    const rotation4D = document.getElementById("4D-rotation")
+    autobutton.className = "button-off";
+    stopbutton.className = "button-off";
+    rotation3D.className = "button-off";
+    rotation4D.className = "button-on";
 }
