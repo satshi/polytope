@@ -9,6 +9,8 @@ document.getElementById("pbtn").addEventListener('click',main);
 pullDownMenu();
 document.getElementById("series").addEventListener('change',pullDownMenu);
 window.addEventListener('resize', onResize, false);
+document.getElementById("auto").addEventListener('click', autoClick)
+document.getElementById("stop").addEventListener('click', stopClick)
 
 function main(){
     const dataDir = 'data/';
@@ -191,6 +193,8 @@ function getBaseName(): string{
 
 var renderer: THREE.WebGLRenderer;
 var camera: THREE.PerspectiveCamera;
+//４次元回転のための行列
+var rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
 
 //  画面を初期化し、物体を置き、アニメーションを定義する。
 // modeは"Solid"または"Frame"
@@ -237,8 +241,6 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     //フォグを生成
     scene.fog = new THREE.Fog(0xaaaaaa, 1.5, 6.5);
 
-    //４次元回転のための行列
-    const rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01,3));
     //アニメーションの設定
     const tick = (): void => {
         requestAnimationFrame(tick);
@@ -267,4 +269,20 @@ function onResize() {
     // カメラのアスペクト比を正す
     camera.aspect = 1;
     camera.updateProjectionMatrix();
+}
+
+function autoClick(){
+    const autobutton = document.getElementById("auto");
+    const stopbutton = document.getElementById("stop");
+    autobutton.className = "button-on";
+    stopbutton.className = "button-off";
+    rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
+}
+
+function stopClick(){
+    const autobutton = document.getElementById("auto");
+    const stopbutton = document.getElementById("stop");
+    autobutton.className = "button-off";
+    stopbutton.className = "button-on";
+    rotation.identity();
 }
