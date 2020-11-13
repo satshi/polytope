@@ -217,6 +217,10 @@ export class Facet {
     makeMesh() {
         this.mesh = new THREE.Mesh(this.geometry, materialTable[this.faces.length % 11]);
     }
+    // 破棄
+    dispose(){
+        this.mesh.geometry.dispose();
+    }
 }
 
 
@@ -369,6 +373,13 @@ export class Polytope {
     //projectorを恒等写像に戻す。
     identityProjector() {
         this.projector.identity();
+        return this;
+    }
+    //geometryの破棄
+    dispose(){
+        for (let f of this.facetList) {
+            f.dispose();
+        }
         return this;
     }
 }

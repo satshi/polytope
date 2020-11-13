@@ -195,6 +195,8 @@ function getBaseName(): string{
 
 var renderer: THREE.WebGLRenderer;
 var camera: THREE.PerspectiveCamera;
+var polytope: pt.Polytope;
+var animationFrame;
 //４次元回転のための行列
 var rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
 
@@ -220,7 +222,11 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     onResize();
 
     // 物体を作成
-    const polytope = new pt.Polytope();
+    if(polytope){
+        polytope.dispose();
+        polytope = null;
+    }
+    polytope = new pt.Polytope();
     polytope.initFromPrePolytope(prePolytope, mode);
     const theObject = polytope.object3D;
     scene.add(theObject);
@@ -244,8 +250,11 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     scene.fog = new THREE.Fog(0xaaaaaa, 1.5, 6.5);
 
     //アニメーションの設定
+    if(animationFrame){
+        window.cancelAnimationFrame(animationFrame);
+    }
     const tick = (): void => {
-        requestAnimationFrame(tick);
+        animationFrame = requestAnimationFrame(tick);
 
     //    theObject.rotation.x += 0.01;
     //    theObject.rotation.y += 0.01;
