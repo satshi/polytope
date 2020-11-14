@@ -101,32 +101,29 @@ export function rotationMatrix4(angle: number, direction: number): THREE.Matrix4
 }
 
 class Projector {
-    ex: Vector4;
-    ey: Vector4;
-    ez: Vector4;
-    ew: Vector4;
+    pmatrix: THREE.Matrix4;
     constructor() {
-        this.identity();
+        this.pmatrix = new THREE.Matrix4();
     }
     identity() {
-        this.ex = new Vector4(1, 0, 0, 0);
-        this.ey = new Vector4(0, 1, 0, 0);
-        this.ez = new Vector4(0, 0, 1, 0);
-        this.ew = new Vector4(0, 0, 0, 1);
+        this.pmatrix.identity();
     }
     // v4を射影した後の値をv3に代入する。
     project(v3: Vector3, v4: Vector4) {
-        v3.set(this.ex.dot(v4), this.ey.dot(v4), this.ez.dot(v4));
+        const m = this.pmatrix.elements;
+        v3.set(
+            v4.x * m[0] + v4.y * m[1] + v4.z * m[2] + v4.w * m[3],
+            v4.x * m[4] + v4.y * m[5] + v4.z * m[6] + v4.w * m[7],
+            v4.x * m[8] + v4.y * m[9] + v4.z * m[10] + v4.w * m[11],
+            );
     }
     // 胞の法線ベクトルを入れて見えるか否かを返す。
     ifVisible(normal: Vector4): boolean {
-        return this.ew.dot(normal) > 0;
+        const m = this.pmatrix.elements;
+        return normal.x * m[12] + normal.y * m[13] + normal.z * m[14] + normal.w * m[15] > 0;
     }
     applyMatrix4(m: THREE.Matrix4) {
-        this.ex.applyMatrix4(m);
-        this.ey.applyMatrix4(m);
-        this.ez.applyMatrix4(m);
-        this.ew.applyMatrix4(m);
+        this.pmatrix = this.pmatrix.multiply(m);
     }
 }
 

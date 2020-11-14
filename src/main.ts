@@ -13,6 +13,7 @@ document.getElementById("auto").addEventListener('click', autoClick);
 document.getElementById("stop").addEventListener('click', stopClick);
 document.getElementById("3D-rotation").addEventListener('click', r3DClick);
 document.getElementById("4D-rotation").addEventListener('click', r4DClick);
+const contents = document.getElementById("contents");
 
 function main(){
     const dataDir = 'data/';
@@ -199,6 +200,7 @@ var polytope: pt.Polytope;
 var animationFrame;
 //４次元回転のための行列
 var rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
+var extrarotation = new THREE.Matrix4().identity();
 
 //  画面を初期化し、物体を置き、アニメーションを定義する。
 // modeは"Solid"または"Frame"
@@ -259,6 +261,7 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     //    theObject.rotation.x += 0.01;
     //    theObject.rotation.y += 0.01;
         polytope.applyMatrix4(rotation);
+        polytope.applyMatrix4(extrarotation);
         polytope.projectVertices();
         polytope.checkVisibility();
         // 描画
@@ -283,6 +286,7 @@ function onResize() {
 }
 
 ////  ボタンクリックのイベントハンドラ
+// 自動的に回転させる。角度とかは決め打ち
 function autoClick(){
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
@@ -293,8 +297,10 @@ function autoClick(){
     rotation3D.className = "button-off";
     rotation4D.className = "button-off";
     rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
+    contents.removeEventListener('mousedown', onDocumentMouseMove, false);
 }
 
+// 止める。
 function stopClick() {
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
@@ -305,8 +311,11 @@ function stopClick() {
     rotation3D.className = "button-off";
     rotation4D.className = "button-off";
     rotation.identity();
+    extrarotation.identity();
+    contents.removeEventListener('mousedown', onDocumentMouseMove, false);
 }
 
+// マウスのドラッグで３次元内での回転する。
 function r3DClick() {
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
@@ -316,8 +325,11 @@ function r3DClick() {
     stopbutton.className = "button-off";
     rotation3D.className = "button-on";
     rotation4D.className = "button-off";
+    contents.addEventListener('mousedown', onDocumentMouseDown, false);
+    rotationMode = 3;
 }
 
+// マウスのドラッグで４次元内での回転する。
 function r4DClick() {
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
@@ -327,4 +339,49 @@ function r4DClick() {
     stopbutton.className = "button-off";
     rotation3D.className = "button-off";
     rotation4D.className = "button-on";
+    contents.addEventListener('mousedown', onDocumentMouseDown, false);
+    rotationMode =4;
+}
+
+
+////// マウスのドラッグで多胞体を回転させる用の変数や関数
+let onMouseDownMouseX = 0;
+let onMouseDownMouseY = 0;
+//  回転モードの場合の回転の方向。３次元なら3。４次元なら4
+let rotationMode = 3;
+
+function onDocumentMouseDown(event) {
+    event.preventDefault();
+    onMouseDownMouseX = event.clientX;
+    onMouseDownMouseY = event.clientY;
+    if(rotationMode == 3){
+        rotation.identity();
+    } else {
+        extrarotation.identity();
+    }
+    contents.addEventListener('mousemove', onDocumentMouseMove, false);
+    contents.addEventListener('mouseup', onDocumentMouseUp, false);
+}
+
+function onDocumentMouseMove(event) {
+    event.preventDefault();
+    const dX = event.clientX - onMouseDownMouseX;
+    const dY = event.clientY - onMouseDownMouseY;
+    onMouseDownMouseX = event.clientX;
+    onMouseDownMouseY = event.clientY;
+    setRotationMatrix(dX, dY);
+}
+
+function onDocumentMouseUp(event) {
+    contents.removeEventListener('mousemove', onDocumentMouseMove, false);
+    contents.removeEventListener('mouseup', onDocumentMouseUp, false);
+}
+
+function setRotationMatrix(dX: number, dY: number) {
+    const scale = 2 / 1000
+    if(rotationMode == 3){
+        rotation = pt.rotationMatrix4(dX * scale, 20).multiply(pt.rotationMatrix4(dY * scale, 12));
+    } else {
+        extrarotation = pt.rotationMatrix4(dX * scale, 30).multiply(pt.rotationMatrix4(dY * scale, 13));
+    }
 }
