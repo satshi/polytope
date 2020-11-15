@@ -297,6 +297,7 @@ function autoClick(){
     rotation3D.className = "button-off";
     rotation4D.className = "button-off";
     rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
+    extrarotation.identity();
     contents.removeEventListener('mousedown', onDocumentMouseMove, false);
 }
 

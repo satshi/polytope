@@ -4,8 +4,23 @@
 
 .button-on{
     background-color: #f88;
+    border-radius: 10px;
+    border: 1px solid #000000;
+    padding: 2px;
 }
 
 .button-off{
+    border-radius: 10px;
+    border: 1px solid #000000;
+    padding: 2px;
+}
 
+.view-button{
+    border-radius: 10px;
+    background-color: #83c5df;
+    border: 2px solid #0000ff;
+    padding:  2px 10px 2px 10px;
+}
+.view-button:hover{
+    background-color: #d7f0f3;
 }
