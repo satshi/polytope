@@ -4,12 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack",
-    "watch": "webpack -w"
+    "build": "webpack --mode=production",
+    "watch": "webpack --watch"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@webpack-cli/init": "^1.0.3",
     "ts-loader": "^8.0.7",
     "typescript": "^4.0.5",
     "webpack": "^5.3.0",
@@ -17,6 +18,7 @@
   },
   "dependencies": {
     "copy-webpack-plugin": "^6.3.0",
+    "npm": "^6.14.8",
     "three": "^0.121.1",
     "write-file-webpack-plugin": "^4.5.1"
   }

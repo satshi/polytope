@@ -1,11 +1,14 @@
+
 const CopyFilePlugin = require("copy-webpack-plugin");
 const WriteFilePlugin = require("write-file-webpack-plugin");
 module.exports = {
-    // モード値を production に設定すると最適化された状態で、
-    // development に設定するとソースマップ有効でJSファイルが出力される
-    mode: "development",
+    mode: 'development',
+
     devtool: 'inline-source-map',
 
+    devServer: {
+        contentBase: './dist',
+    },
     // メインとなるJavaScriptファイル（エントリーポイント）
     entry: "./src/main.ts",
     // ファイルの出力設定
