@@ -1,33 +1,40 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Document</title>
 </head>
-<body>
-    <input type="checkbox" id="ifframe">Frame view　
-    <select id="series">
-        <option value="examples">Simple examples</option>
-        <option value="5">5 cell series</option>
-        <option value="8">8-16 cell series</option>
-        <option value="24">24 cell series</option>
-        <option value="120">120-600 cell series</option>
-        <option value="others">Others</option>
-    </select>
-    <select id="polytope">
-    </select>
-    <span class="view-button" id="pbtn">View</span>
-    &nbsp;&nbsp; control:
-    <span class="button-on" id="auto">Auto</span>
-    <span class="button-off" id="stop">Stop</span>
-    <span class="button-off" id="3D-rotation">3D rotation</span>
-    <span class="button-off" id="4D-rotation">4D rotation</span>
 
-    
+<body>
+    <span class="buttons">
+        <input type="checkbox" id="ifframe">Frame view　
+        <select id="series">
+            <option value="examples">Simple examples</option>
+            <option value="5">5 cell series</option>
+            <option value="8">8-16 cell series</option>
+            <option value="24">24 cell series</option>
+            <option value="120">120-600 cell series</option>
+            <option value="others">Others</option>
+        </select>
+        <select id="polytope">
+        </select>
+        <span class="view-button" id="pbtn">View</span>
+    </span>
+    <span class="buttons">
+        &nbsp;&nbsp; control:
+        <span class="button-on" id="auto">Auto</span>
+        <span class="button-off" id="stop">Stop</span>
+        <span class="button-off" id="3D-rotation">3D rotation</span>
+        <span class="button-off" id="4D-rotation">4D rotation</span>
+    </span>
+
+
     <div id="contents">
     </div>
     <script src="./main.js"></script>
 </body>
+
 </html>
