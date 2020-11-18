@@ -298,7 +298,7 @@ function autoClick(){
     rotation4D.className = "button-off";
     rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
     extrarotation.identity();
-    contents.removeEventListener('mousedown', onDocumentMouseMove, false);
+    contents.removeEventListener('mousedown', onDocumentMouseDown, false);
 }
 
 // 止める。
@@ -313,7 +313,7 @@ function stopClick() {
     rotation4D.className = "button-off";
     rotation.identity();
     extrarotation.identity();
-    contents.removeEventListener('mousedown', onDocumentMouseMove, false);
+    contents.removeEventListener('mousedown', onDocumentMouseDown, false);
 }
 
 // マウスのドラッグで３次元内での回転する。
