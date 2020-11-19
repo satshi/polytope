@@ -227,6 +227,8 @@ export class Polytope {
     faces: number[][];  //面
     facetList: Facet[];  //胞のリスト
     facetCenter: Vector4[]; //胞の中心のリスト
+    facetToVertex: number[][];//各胞に含まれる頂点のリスト
+    facetToFace: number[][];//各胞に含まれる面のリスト
     projector: Projector;  // 射影の仕方。あるいは向き。
     object3D: THREE.Group; //全部まとめた３次元のオブジェクト
 
@@ -251,6 +253,8 @@ export class Polytope {
         this.vertices = vector4list(prePolytope["vertices"]);
         this.faces = prePolytope["faces"];
         this.facetCenter = vector4list(prePolytope["facetCenters"]);
+        this.facetToVertex = prePolytope["facetToVertex"];
+        this.facetToFace = prePolytope["facetToFace"];
         normalize(this.vertices);
         normalize(this.facetCenter);
         return this;
@@ -260,13 +264,10 @@ export class Polytope {
     initProjector() {
         this.projector = new Projector();
     }
-    // 胞のリストを作る。
-    makeFacetList() {
-        this.initProjector();
-        this.facetList = new Array(this.facetCenter.length);
-        const facetSetChecker = new SubsetChecker(this.vertices.length);
-        // thisのリストと新しく作る頂点のリストのインデックスの対応
-        const vertexFacetTable: number[] = new Array(this.vertices.length);
+
+    // 各胞の頂点のリストを作る。
+    makeFacetToVertex(){
+        this.facetToVertex = new Array(this.facetCenter.length);
         for (let i = 0; i < this.facetCenter.length; i++) {
             const center = this.facetCenter[i];
             // 胞の中心から最小の距離を求める
@@ -279,14 +280,41 @@ export class Polytope {
                     facetVertexList.push(j);
                 }
             }
-            facetSetChecker.clear();
-            facetSetChecker.setElements(facetVertexList);
+            this.facetToVertex[i] = facetVertexList;
+        }
+    }
+    // 各胞の面のリストを作る。
+    makeFacetToFace(){
+        const facetSetChecker = new SubsetChecker(this.vertices.length);
+        this.facetToFace = new Array(this.facetCenter.length);
+        for (let i = 0; i < this.facetCenter.length; i++) {
             const facesInTheFacet: number[] = [];
+            facetSetChecker.clear();
+            facetSetChecker.setElements(this.facetToVertex[i]);
             for (let j = 0; j < this.faces.length; j++) {
                 if (facetSetChecker.ifSubset(this.faces[j])) {
                     facesInTheFacet.push(j);
                 }
             }
+            this.facetToFace[i]=facesInTheFacet;
+        }
+    }
+    // 胞のリストを作る。
+    makeFacetList() {
+        this.initProjector();
+        this.facetList = new Array(this.facetCenter.length);
+        // thisのリストと新しく作る頂点のリストのインデックスの対応
+        const vertexFacetTable: number[] = new Array(this.vertices.length);
+
+        if(!this.facetToVertex){
+            this.makeFacetToVertex();
+        }
+        if(!this.facetToFace){
+            this.makeFacetToFace();
+        }
+        for (let i = 0; i < this.facetCenter.length; i++) {
+            const facetVertexList = this.facetToVertex[i];
+            const facesInTheFacet = this.facetToFace[i];
             // 胞ごとに頂点をcloneして頂点のリストを作る。
             const facetVertices: Vector4[] = new Array(facetVertexList.length);
             for (let j = 0; j < facetVertexList.length; j++) {
@@ -308,7 +336,7 @@ export class Polytope {
             const facet = new Facet();
             facet.vertices = facetVertices;
             facet.faces = facetFaces;
-            facet.normal = center.clone().normalize();
+            facet.normal = this.facetCenter[i].clone().normalize();
             facet.projector = this.projector;
             // 胞をthisのリストに追加。
             this.facetList[i] = facet;
