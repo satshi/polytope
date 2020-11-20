@@ -231,6 +231,7 @@ export class Polytope {
     facetToFace: number[][];//各胞に含まれる面のリスト
     projector: Projector;  // 射影の仕方。あるいは向き。
     object3D: THREE.Group; //全部まとめた３次元のオブジェクト
+    prePolytope: Object; //JSONファイル出力のため用のデータ
 
     // JSONからそのまま読み込んだObjectから作って必要な初期化やる。
     // type はSolidかFrame
@@ -246,6 +247,7 @@ export class Polytope {
         } else {
             throw 'Type must be "Solid" or "Frame"';
         }
+        this.prePolytope = prePolytope;
         return this;
     }
     // JSONからそのまま読み込んだObjectから作る。
@@ -406,5 +408,11 @@ export class Polytope {
             f.dispose();
         }
         return this;
+    }
+    //詳しい情報も加えたJSONファイルを出力
+    getFullJSONData(): string{
+        this.prePolytope["facetToVertex"] = this.facetToVertex;
+        this.prePolytope["facetToFace"] = this.facetToFace;
+        return JSON.stringify(this.prePolytope);
     }
 }
