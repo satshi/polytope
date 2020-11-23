@@ -286,6 +286,12 @@ function onResize() {
 }
 
 ////  ボタンクリックのイベントハンドラ
+
+const MOUSE_DOWN = 'pointerdown';
+const MOUSE_MOVE = 'pointermove';
+const MOUSE_UP = 'pointerup';
+
+
 // 自動的に回転させる。角度とかは決め打ち
 function autoClick(){
     const autobutton = document.getElementById("auto");
@@ -298,7 +304,7 @@ function autoClick(){
     rotation4D.className = "button-off";
     rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
     extrarotation.identity();
-    contents.removeEventListener('mousedown', onDocumentMouseDown, false);
+    contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
 }
 
 // 止める。
@@ -313,7 +319,7 @@ function stopClick() {
     rotation4D.className = "button-off";
     rotation.identity();
     extrarotation.identity();
-    contents.removeEventListener('mousedown', onDocumentMouseDown, false);
+    contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
 }
 
 // マウスのドラッグで３次元内での回転する。
@@ -326,7 +332,7 @@ function r3DClick() {
     stopbutton.className = "button-off";
     rotation3D.className = "button-on";
     rotation4D.className = "button-off";
-    contents.addEventListener('mousedown', onDocumentMouseDown, false);
+    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
     rotationMode = 3;
 }
 
@@ -340,7 +346,7 @@ function r4DClick() {
     stopbutton.className = "button-off";
     rotation3D.className = "button-off";
     rotation4D.className = "button-on";
-    contents.addEventListener('mousedown', onDocumentMouseDown, false);
+    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
     rotationMode =4;
 }
 
@@ -360,8 +366,8 @@ function onDocumentMouseDown(event) {
     } else {
         extrarotation.identity();
     }
-    contents.addEventListener('mousemove', onDocumentMouseMove, false);
-    contents.addEventListener('mouseup', onDocumentMouseUp, false);
+    contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, false);
+    contents.addEventListener(MOUSE_UP, onDocumentMouseUp, false);
 }
 
 function onDocumentMouseMove(event) {
@@ -374,8 +380,8 @@ function onDocumentMouseMove(event) {
 }
 
 function onDocumentMouseUp(event) {
-    contents.removeEventListener('mousemove', onDocumentMouseMove, false);
-    contents.removeEventListener('mouseup', onDocumentMouseUp, false);
+    contents.removeEventListener(MOUSE_MOVE, onDocumentMouseMove, false);
+    contents.removeEventListener(MOUSE_UP, onDocumentMouseUp, false);
 }
 
 function setRotationMatrix(dX: number, dY: number) {
