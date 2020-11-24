@@ -1,5 +1,16 @@
+body{
+    margin: 0px;
+}
+
+#container{
+    background-color: #888888 ;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+}
+
 #polytope{
-    width: 12em;
+    width: 7em;
 }
 
 .button-on{
@@ -10,7 +21,7 @@
 }
 
 .button-off{
-    border-radius: 10px;
+    border-radius: 5px;
     border: 1px solid #000000;
     padding: 2px;
 }
@@ -21,9 +32,9 @@
 
 .view-button{
     color: white;
-    border-radius: 10px;
+    border-radius: 5px;
     background-color: #0804fa;
-    padding:  2px 10px 2px 10px;
+    padding:  2px 5px 2px 5px;
     box-shadow: 1px 2px slategrey;
 }
 
@@ -39,5 +50,23 @@
 
 
 .buttons{
-    height: 5ex;
+    white-space: nowrap;
+    display: inline;
+    margin: 5px;
+    padding: 0.5ex;
+    border: 1px solid #000000;
+    background-color: #aaaaaa;
+}
+
+.head{
+    margin: 10px;
+    position: fixed;
+}
+
+#contents{
+    position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform : translate(-50%,-50%);
+  transform : translate(-50%,-50%);
 }

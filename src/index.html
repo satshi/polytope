@@ -9,8 +9,12 @@
 </head>
 
 <body>
-    <span class="buttons">
-        <input type="checkbox" id="ifframe">Frame view　
+    <div id="container">
+    <div id="contents">
+    </div>
+    <div class="head">
+    <div class="buttons">
+        <input type="checkbox" id="ifframe">Frame　
         <select id="series">
             <option value="examples">Simple examples</option>
             <option value="5">5 cell series</option>
@@ -22,17 +26,18 @@
         <select id="polytope">
         </select>
         <span class="view-button" id="pbtn">View</span>
-    </span>
-    <span class="buttons">
-        &nbsp;&nbsp; control:
+    </div>
+    <div class="buttons">
+        &nbsp; Control:
         <span class="button-on" id="auto">Auto</span>
         <span class="button-off" id="stop">Stop</span>
-        <span class="button-off" id="3D-rotation">3D rotation</span>
-        <span class="button-off" id="4D-rotation">4D rotation</span>
-    </span>
+        <span class="button-off" id="3D-rotation">3D move</span>
+        <span class="button-off" id="4D-rotation">4D move</span>
+    </div>
+    </div>
 
 
-    <div id="contents">
+
     </div>
     <script src="./main.js"></script>
 </body>

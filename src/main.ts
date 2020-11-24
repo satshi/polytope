@@ -51,9 +51,9 @@ function pullDownMenu(){
             menu = [
                 {cd:'cube', label: 'Cube'},
                 {cd:'120', label: '120-cell'},
-                {cd: 'a', label: 'a semi-regular polytope' },
-                {cd: 'b', label: 'a semi-regular polytope' },
-                {cd: 'c', label: 'a semi-regular polytope' }
+                {cd: 'a', label: 'example 1' },
+                {cd: 'b', label: 'example 2' },
+                {cd: 'c', label: 'example 3' }
             ];
             break;
         case '5':
@@ -285,13 +285,15 @@ function init(prePolytope:Object, mode:string="Solid"): void{
 
 function onResize() {
     // サイズを取得
-    const width = window.innerWidth * 0.98;
-    const height = window.innerHeight * 0.95;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
     const size = Math.floor(Math.min(width,height));
 
     // レンダラーのサイズを調整する
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(size, size);
+
+    contents.style.width = size+"px";
 
     // カメラのアスペクト比を正す
     camera.aspect = 1;
