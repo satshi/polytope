@@ -255,6 +255,19 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     if(animationFrame){
         window.cancelAnimationFrame(animationFrame);
     }
+
+    //スクロールさせないようにする。
+    contents.addEventListener(MOUSE_DOWN, (event) => {
+        event.preventDefault();
+    }, { passive: false });
+    contents.addEventListener(MOUSE_MOVE, (event) => {
+        event.preventDefault();
+    }, { passive: false });
+    contents.addEventListener(MOUSE_UP, (event) => {
+        event.preventDefault();
+    }, { passive: false });
+
+    
     const tick = (): void => {
         animationFrame = requestAnimationFrame(tick);
 
@@ -272,9 +285,9 @@ function init(prePolytope:Object, mode:string="Solid"): void{
 
 function onResize() {
     // サイズを取得
-    const width = window.innerWidth;
-    const height = window.innerHeight;
-    const size = Math.min(width,height);
+    const width = window.innerWidth * 0.98;
+    const height = window.innerHeight * 0.95;
+    const size = Math.floor(Math.min(width,height));
 
     // レンダラーのサイズを調整する
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -332,7 +345,7 @@ function r3DClick() {
     stopbutton.className = "button-off";
     rotation3D.className = "button-on";
     rotation4D.className = "button-off";
-    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
+    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
     rotationMode = 3;
 }
 
@@ -346,7 +359,7 @@ function r4DClick() {
     stopbutton.className = "button-off";
     rotation3D.className = "button-off";
     rotation4D.className = "button-on";
-    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
+    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
     rotationMode =4;
 }
 
@@ -366,8 +379,8 @@ function onDocumentMouseDown(event) {
     } else {
         extrarotation.identity();
     }
-    contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, false);
-    contents.addEventListener(MOUSE_UP, onDocumentMouseUp, false);
+    contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, { passive: false });
+    contents.addEventListener(MOUSE_UP, onDocumentMouseUp, {passive: false});
 }
 
 function onDocumentMouseMove(event) {
@@ -380,6 +393,7 @@ function onDocumentMouseMove(event) {
 }
 
 function onDocumentMouseUp(event) {
+    event.preventDefault();
     contents.removeEventListener(MOUSE_MOVE, onDocumentMouseMove, false);
     contents.removeEventListener(MOUSE_UP, onDocumentMouseUp, false);
 }
