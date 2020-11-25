@@ -1,10 +1,13 @@
-body{
+html, body{
     margin: 0px;
+    overflow: hidden;
 }
 
 #container{
+    margin: 0px;
+    padding: 0px;
     background-color: #888888 ;
-    position: relative;
+    /* position: relative; */
     width: 100%;
     height: 100vh;
 }
@@ -64,9 +67,11 @@ body{
 }
 
 #contents{
+    margin: 0px;
+    text-align: center;
     position: absolute;
-  top: 50%;
-  left: 50%;
-  -webkit-transform : translate(-50%,-50%);
-  transform : translate(-50%,-50%);
+    top: 50%;
+    left: 50%;
+    -webkit-transform : translate(-50%,-50%);
+    transform : translate(-50%,-50%);
 }

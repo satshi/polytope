@@ -293,7 +293,7 @@ function onResize() {
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(size, size);
 
-    contents.style.width = size+"px";
+    //contents.style.width = size+"px";
 
     // カメラのアスペクト比を正す
     camera.aspect = 1;
