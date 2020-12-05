@@ -100,6 +100,8 @@ export function rotationMatrix4(angle: number, direction: number): THREE.Matrix4
     return new THREE.Matrix4().fromArray(array);
 }
 
+
+// ４次元から３次元への射影のクラス。
 class Projector {
     pmatrix: THREE.Matrix4;
     constructor() {
@@ -122,13 +124,16 @@ class Projector {
         const m = this.pmatrix.elements;
         return normal.x * m[12] + normal.y * m[13] + normal.z * m[14] + normal.w * m[15] > 0;
     }
+    // ４次元の行列（回転を想定）をかける。
     applyMatrix4(m: THREE.Matrix4) {
         this.pmatrix = this.pmatrix.multiply(m);
     }
 }
 
+//  使う色の表。11種類用意している。
 const colorTable = [new THREE.Color(1.0, 0.6, 1.0), new THREE.Color(0.87, 0.87, 0.), new THREE.Color(0.3, 1.0, 1.0), new THREE.Color(1.0, 0.6, 0.4), new THREE.Color(0.5, 1.0, 0.5), new THREE.Color(0.7, 0.7, 1.0), new THREE.Color(1.0, 0.8, 0.4), new THREE.Color(0.4, 0.8, 1.0), new THREE.Color(0.85, 0.6, 1.0), new THREE.Color(1.0, 0.4, 0.8), new THREE.Color(0.4, 1.0, 0.8)];
 
+// 上の色の表を元にしてMaterialの表を作る。
 const materialTable = colorTable.map(c => {
     const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0x888888, flatShading: true });
 //    const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide});
