@@ -1,25 +1,25 @@
-# 多胞体を表示するWebアプリ
+# 4D Polytope Viewer
 
-## リリースバージョン
+## Try it
 
-[ここでリリースバージョンを試せる。](https://satshi.github.io/app/)
+[You can try the app here.](https://satshi.github.io/app/)
 
-## 使い方
+## How to use
 
-### 多胞体の表示
+### View a polytope
 
-ドロップダウンリストから適当に選んで「View」のボタンを押すと多胞体が表示される。
-このとき「Frame」のチェックボックスにチェックを入れて「View」を押すと、面の枠だけの表示になる。
+Select a polytope from the drop-down list and press the "View" button to display the polytope.
+If you check the checkbox of "Frame" and press the "View" button, the polytope will be displayed in the frame mode.
 
-### コントロール
+### Control
 
-Controlのところにあるボタンを押すことにより、次のように動かし方を変えることが出来る。
+By push buttons in "Control" section, you can change the control mode.
 
-* Auto: 勝手に回る。
-* Stop: 止まる。
-* 3D move: マウスのドラッグで3次元内での回転が出来る。
-* 4D move: マウスのドラッグで4次元内での回転が出来る。
+* Auto: It rotates automatically.
+* Stop: It stops.
+* 3D move: You can rotate in three-dimensional space by dragging the mouse.
+* 4D move: You can rotate in four-dimensional space by dragging the mouse.
 
-## ドキュメント
+## Documents
 
-[多胞体のJSONデータのフォーマット](format.md)
+[JSON data format for polytopes](format.md)

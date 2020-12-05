@@ -1,70 +1,73 @@
-# 4次元多胞体のJSON形式のフォーマット
+# JSON data format for 4D polytopes
 
-## 要素
+## Elements
 
 ### vertices
 
-頂点の座標の列。必ず必要。
+List of the coordinates of the vertices. This is mandatory.
 
-``` json
+```
 "vertices":[
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
+    [Float, Float, Float, Float],
+    [Float, Float, Float, Float],
+    [Float, Float, Float, Float],
+    [Float, Float, Float, Float],
     ...
 ],
 ```
 
+
 ### faces
 
-面の情報。なるべく必要。一つの面は頂点のラベルの列で表す。辺でつながっている順にならべる。向きは気にしない。
+List of the faces. This is mandatory. A face is expressed by a list of indices of vertices.  The numbering of vertices is zero-based.  Neighboring vertices are connected by edges.  The orientation is arbitrary.
 
-```json
+```
 "faces":[
-    [数, 数, 数, 数, ...],
-    [数, 数, 数, 数, ...],
-    [数, 数, 数, 数, ...],
+    [Integer, Integer, Integer, Integer, ...],
+    [Integer, Integer, Integer, Integer, ...],
+    [Integer, Integer, Integer, Integer, ...],
     ...
 ],
 ```
 
 ### facetCenters
 
-胞の中心の座標の列。必ず必要。
+List of the coordinates of the facets.  This is mandatory.
 
-``` json
+```
 "facetCenters":[
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
+    [Float, Float, Float, Float],
+    [Float, Float, Float, Float],
+    [Float, Float, Float, Float],
+    [Float, Float, Float, Float],
     ...
 ],
 ```
 
 ### facetToVertex
 
-胞に属する頂点のラベルのリスト。その場で生成も出来るが、時間がかかるので大きな多胞体の場合は、あったほうが立ち上げが速くなる。
-``` json
+List of the indices of vertices which belongs to each facet. This is optional.  The numbering of vertices is zero-based.  These data help to start up quickly.
+
+```
 "facetToVertex":[
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
+    [Integer, Integer, Integer, Integer],
+    [Integer, Integer, Integer, Integer],
+    [Integer, Integer, Integer, Integer],
+    [Integer, Integer, Integer, Integer],
     ...
 ],
 ```
 
 ### facetToFace
 
-胞に属する面のラベルのリスト。その場で生成も出来るが、時間がかかるので大きな多胞体の場合は、あったほうが立ち上げが速くなる。
-``` json
+List of the indices of faces which belongs to each facet. This is optional.  The numbering of faces is zero-based.  These data help to start up quickly.
+
+```
 "facetToFace":[
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
-    [数, 数, 数, 数],
+    [Integer, Integer, Integer, Integer],
+    [Integer, Integer, Integer, Integer],
+    [Integer, Integer, Integer, Integer],
+    [Integer, Integer, Integer, Integer],
     ...
 ],
 ```
