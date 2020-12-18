@@ -19,7 +19,7 @@ List of the coordinates of the vertices. This is mandatory.
 
 ### faces
 
-List of the faces. This is mandatory. A face is expressed by a list of indices of vertices.  The numbering of vertices is zero-based.  Neighboring vertices are connected by edges.  The orientation is arbitrary.
+List of the faces. This is mandatory. A face contains a list of indices of vertices.  The numbering of vertices is zero-based.  Two neighboring vertices must be connected by an edge.  The orientation is arbitrary.
 
 ```
 "faces":[
@@ -32,7 +32,7 @@ List of the faces. This is mandatory. A face is expressed by a list of indices o
 
 ### facetCenters
 
-List of the coordinates of the facets.  This is mandatory.
+List of the coordinates of the centers of facets.  This is mandatory.
 
 ```
 "facetCenters":[

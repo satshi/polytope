@@ -11,7 +11,7 @@ Then you will see a rotating 4D cube.
 
 ### Control
 
-By pushing buttons in "Control" section, you can change the control mode.
+By pushing buttons in the "Control" section, you can change the control mode.
 
 * Auto: It rotates automatically.
 * Stop: It stops.
@@ -21,17 +21,17 @@ By pushing buttons in "Control" section, you can change the control mode.
 ### Choose another polytope
 
 1. Select a polytope class from the drop-down list on the left.
-2. Select a polytope form the drop-down list on the right.
+2. Select a polytope from the drop-down list on the right.
 3. Push the "View" button.
 
 Then you will see the polytope.
 
 ### Frame view
 
-If you check the checkbox of "Frame" and press the "View" button, the polytope will be displayed in the frame mode.
+If you check the checkbox of "Frame" and press the "View" button, the polytope will be displayed in frame mode.
 
 ## About polytopes
-Wikipedia page [Uniform 4-polytope](https://en.wikipedia.org/wiki/Uniform_4-polytope) includes nice explanation.  The name of polytopes in "**-cell series" in this app are based on Coxeter diagrams. 0 in this app corresponds to ● in the Coxeter diagram and 1 corresponds to ◉. Thus, for example, 0101 in this app corresponds to Coxeter diagram ●－◉－●－◉.  Snub is ◯－◯－◯－◯.
+Wikipedia page [Uniform 4-polytope](https://en.wikipedia.org/wiki/Uniform_4-polytope) includes a nice explanation.  The name of polytopes in "**-cell series" in this app are based on Coxeter diagrams. 0 in this app corresponds to ● in the Coxeter diagram and 1 corresponds to ◉. Thus, for example, 0101 in this app corresponds to Coxeter diagram ●－◉－●－◉.  "Snub" in this app corresponds to ◯－◯－◯－◯.
 
 
 ## Other information
