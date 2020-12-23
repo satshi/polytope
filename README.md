@@ -1,5 +1,9 @@
 # 4D Polytope Viewer
 
+This is 4D Polytope Viewer written by typescript and three.js. You can see most 4D convex uniform polytopes and rotate them.
+
+![A screenshot](img/screenshot.jpeg "A screenshot")
+
 ## Getting started
 
 1. [Go to here.](https://satshi.github.io/app/)
