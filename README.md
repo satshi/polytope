@@ -3,7 +3,7 @@
 ## Getting started
 
 1. [Go to here.](https://satshi.github.io/app/)
-2. Push "View" button.
+2. Push the "View" button.
 
 Then you will see a rotating 4D cube.
 
