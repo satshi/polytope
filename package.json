@@ -19,7 +19,7 @@
   "dependencies": {
     "copy-webpack-plugin": "^6.3.0",
     "npm": "^6.14.8",
-    "three": "^0.121.1",
+    "three": ">=0.125.0",
     "write-file-webpack-plugin": "^4.5.1"
   }
 }
