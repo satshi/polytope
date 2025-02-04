@@ -52,18 +52,34 @@ html, body{
 }
 
 
-.buttons{
-    white-space: nowrap;
-    display: inline;
+.buttons {
+    display: inline-block;
+    /* white-space: nowrap; */
+    /* 必要に応じて削除または調整 */
     margin: 5px;
     padding: 0.5ex;
     border: 1px solid #000000;
     background-color: #aaaaaa;
 }
 
-.head{
+.head {
+    display: flex;
+    flex-direction: row;
+    /* 横並び（デフォルト） */
+    flex-wrap: wrap;
+    /* 横幅が足りない場合は自動で折り返す */
     margin: 10px;
     position: fixed;
+    width: calc(100% - 20px);
+    /* 左右のマージンを考慮 */
+}
+
+@media screen and (max-width: 600px) {
+    .head {
+        flex-direction: column;
+        /* 狭い画面では縦並び */
+        align-items: flex-start;
+    }
 }
 
 #contents{
