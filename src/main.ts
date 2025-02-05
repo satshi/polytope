@@ -1,13 +1,14 @@
 import * as THREE from "three";
 //import { AlphaFormat } from "three";
 //import * as pu from "./polygon_util";
+import { VertexNormalsHelper } from "three/examples/jsm/helpers/VertexNormalsHelper.js";
 import * as pt from "./polytope";
 
 //window.addEventListener("DOMContentLoaded", main);
 
-document.getElementById("pbtn").addEventListener('click',main);
+document.getElementById("pbtn").addEventListener('click', main);
 pullDownMenu();
-document.getElementById("series").addEventListener('change',pullDownMenu);
+document.getElementById("series").addEventListener('change', pullDownMenu);
 window.addEventListener('resize', onResize, false);
 document.getElementById("auto").addEventListener('click', autoClick);
 document.getElementById("stop").addEventListener('click', stopClick);
@@ -15,7 +16,7 @@ document.getElementById("3D-rotation").addEventListener('click', r3DClick);
 document.getElementById("4D-rotation").addEventListener('click', r4DClick);
 const contents = document.getElementById("contents");
 
-function main(){
+function main() {
     const dataDir = 'data/';
     const dataExt = '.json';
     const basename = getBaseName();
@@ -27,33 +28,33 @@ function main(){
     fetch(fullname)
         .then(response => response.json())
         .then(json => {
-            init(json,mode);
+            init(json, mode);
         })
-        .catch((error)=>{
+        .catch((error) => {
             // const fs = require('fs');
             // fs.readFile(fullname, 'utf8', function (err, data) {
             //     init(JSON.parse(data), mode);
             // });
-            alert('Fail to load data:'+ error);
+            alert('Fail to load data:' + error);
         });
 }
 
 // プルダウンメニューを作る。
-function pullDownMenu(){
+function pullDownMenu() {
     interface Menu {
         cd: string;
         label: string;
     };
     let menu: Menu[];
-    const series = (<HTMLInputElement> document.getElementById("series")).value;
-    switch(series){
+    const series = (<HTMLInputElement>document.getElementById("series")).value;
+    switch (series) {
         case 'examples':
             menu = [
-                {cd:'cube', label: 'Cube'},
-                {cd:'120', label: '120-cell'},
-                {cd: 'a', label: 'example 1' },
-                {cd: 'b', label: 'example 2' },
-                {cd: 'c', label: 'example 3' }
+                { cd: 'cube', label: 'Cube' },
+                { cd: '120', label: '120-cell' },
+                { cd: 'a', label: 'example 1' },
+                { cd: 'b', label: 'example 2' },
+                { cd: 'c', label: 'example 3' }
             ];
             break;
         case '5':
@@ -92,7 +93,7 @@ function pullDownMenu(){
     }
     const polytopePullDown = document.getElementById('polytope');
     polytopePullDown.textContent = null;
-    for(let i of menu){
+    for (let i of menu) {
         let item = document.createElement("option");
         item.value = i.cd;
         item.text = i.label;
@@ -100,7 +101,7 @@ function pullDownMenu(){
     }
 }
 
-const polytopeTable ={
+const polytopeTable = {
     "examples": {
         "cube": "c8",
         "120": "c120",
@@ -188,7 +189,7 @@ const polytopeTable ={
     }
 }
 
-function getBaseName(): string{
+function getBaseName(): string {
     const series = (<HTMLInputElement>document.getElementById("series")).value;
     const subclass = (<HTMLInputElement>document.getElementById("polytope")).value;
     return polytopeTable[series][subclass];
@@ -202,29 +203,19 @@ var animationFrame;
 var rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
 var extrarotation = new THREE.Matrix4().identity();
 
-//  画面を初期化し、物体を置き、アニメーションを定義する。
-// modeは"Solid"または"Frame"
-function init(prePolytope:Object, mode:string="Solid"): void{
-    // レンダラーを作成
-    renderer = new THREE.WebGLRenderer({antialias: true});
-    // レンダラーのサイズを設定
-    //const size = Math.min(window.innerHeight, window.innerWidth);
-    //renderer.setSize(size, size);
+
+function init(prePolytope: Object, mode: string = "Solid"): void {
+    // レンダラー、シーン、カメラの作成などはそのまま
+    renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setClearColor(new THREE.Color(0x888888));
-
-    // シーンを作成
     const scene = new THREE.Scene();
-
-    // カメラを作成
     camera = new THREE.PerspectiveCamera(33, 1, 1, 10);
     camera.position.set(0, 0, 4);
     camera.lookAt(scene.position);
-
-    // 大きさをWindowに合わせて調整
     onResize();
 
-    // 物体を作成
-    if(polytope){
+    // polytope の作成とオブジェクト追加
+    if(polytope) {
         polytope.dispose();
         polytope = null;
     }
@@ -233,51 +224,34 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     const theObject = polytope.object3D;
     scene.add(theObject);
 
-    // canvasをcontentsに追加
-    const contents = document.getElementById('contents')
+    // VertexNormalsHelper を各 Mesh に対して追加
+    theObject.children.forEach((child) => {
+        if(child instanceof THREE.Mesh) {
+            const helper = new VertexNormalsHelper(child, 0.05, 0xff0000);
+            scene.add(helper);
+        }
+    });
+
+    // canvas を contents に追加
+    const contents = document.getElementById('contents');
     contents.textContent = null;
     contents.appendChild(renderer.domElement);
 
-    // 平行光源を生成
+    // ライトの設定（例）
     const light = new THREE.DirectionalLight(0xffffff);
     light.position.set(-3, 3, 3);
     scene.add(light);
-
-    // アンビエントライトを生成
-    const ambientLight = new THREE.AmbientLight(new THREE.Color(0x444444));
-    ambientLight.position.set(1, 1, 1);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
-
-    //フォグを生成
     scene.fog = new THREE.Fog(0xaaaaaa, 1.5, 6.5);
 
-    //アニメーションの設定
-    if(animationFrame){
-        window.cancelAnimationFrame(animationFrame);
-    }
-
-    //スクロールさせないようにする。
-    contents.addEventListener(MOUSE_DOWN, (event) => {
-        event.preventDefault();
-    }, { passive: false });
-    contents.addEventListener(MOUSE_MOVE, (event) => {
-        event.preventDefault();
-    }, { passive: false });
-    contents.addEventListener(MOUSE_UP, (event) => {
-        event.preventDefault();
-    }, { passive: false });
-
-    
+    // アニメーションループ
     const tick = (): void => {
-        animationFrame = requestAnimationFrame(tick);
-
-    //    theObject.rotation.x += 0.01;
-    //    theObject.rotation.y += 0.01;
+        requestAnimationFrame(tick);
         polytope.applyMatrix4(rotation);
         polytope.applyMatrix4(extrarotation);
         polytope.projectVertices();
         polytope.checkVisibility();
-        // 描画
         renderer.render(scene, camera);
     };
     tick();
@@ -287,7 +261,7 @@ function onResize() {
     // サイズを取得
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const size = Math.floor(Math.min(width,height));
+    const size = Math.floor(Math.min(width, height));
 
     // レンダラーのサイズを調整する
     renderer.setPixelRatio(window.devicePixelRatio);
@@ -308,7 +282,7 @@ const MOUSE_UP = 'pointerup';
 
 
 // 自動的に回転させる。角度とかは決め打ち
-function autoClick(){
+function autoClick() {
     const autobutton = document.getElementById("auto");
     const stopbutton = document.getElementById("stop");
     const rotation3D = document.getElementById("3D-rotation")
@@ -362,7 +336,7 @@ function r4DClick() {
     rotation3D.className = "button-off";
     rotation4D.className = "button-on";
     contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
-    rotationMode =4;
+    rotationMode = 4;
 }
 
 
@@ -376,13 +350,13 @@ function onDocumentMouseDown(event) {
     event.preventDefault();
     onMouseDownMouseX = event.clientX;
     onMouseDownMouseY = event.clientY;
-    if(rotationMode == 3){
+    if (rotationMode == 3) {
         rotation.identity();
     } else {
         extrarotation.identity();
     }
     contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, { passive: false });
-    contents.addEventListener(MOUSE_UP, onDocumentMouseUp, {passive: false});
+    contents.addEventListener(MOUSE_UP, onDocumentMouseUp, { passive: false });
 }
 
 function onDocumentMouseMove(event) {
@@ -402,7 +376,7 @@ function onDocumentMouseUp(event) {
 
 function setRotationMatrix(dX: number, dY: number) {
     const scale = 2 / 1000
-    if(rotationMode == 3){
+    if (rotationMode == 3) {
         rotation = pt.rotationMatrix4(dX * scale, 20).multiply(pt.rotationMatrix4(dY * scale, 12));
     } else {
         extrarotation = pt.rotationMatrix4(dX * scale, 30).multiply(pt.rotationMatrix4(dY * scale, 13));
