@@ -194,8 +194,8 @@ function getBaseName(): string{
     return polytopeTable[series][subclass];
 }
 
-var renderer: THREE.WebGLRenderer;
-var camera: THREE.PerspectiveCamera;
+var renderer: THREE.WebGLRenderer | null = null;
+var camera: THREE.PerspectiveCamera | null = null;
 var polytope: pt.Polytope;
 var animationFrame;
 //４次元回転のための行列
@@ -284,16 +284,17 @@ function init(prePolytope:Object, mode:string="Solid"): void{
 }
 
 function onResize() {
+    if (!renderer || !camera) {
+        return;
+    }
     // サイズを取得
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const size = Math.floor(Math.min(width,height));
+    const size = Math.floor(Math.min(width, height));
 
     // レンダラーのサイズを調整する
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(size, size);
-
-    //contents.style.width = size+"px";
 
     // カメラのアスペクト比を正す
     camera.aspect = 1;
