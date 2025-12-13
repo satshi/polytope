@@ -134,8 +134,9 @@ const colorTable = [new THREE.Color(1.0, 0.6, 1.0), new THREE.Color(0.87, 0.87, 
 
 // 上の色の表を元にしてMaterialの表を作る。
 const materialTable = colorTable.map(c => {
-    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0x888888, flatShading: true });
-    //    const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide});
+    // const material = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, metalness:0, flatShading: true });
+    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0x888888, shininess: 30,  flatShading: true });
+    // const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide});
     material.color = c;
     return material;
 });
