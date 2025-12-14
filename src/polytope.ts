@@ -130,7 +130,7 @@ class Projector {
 }
 
 //  使う色の表。11種類用意している。
-const colorTable = [new THREE.Color(1.0, 0.6, 1.0), new THREE.Color(0.87, 0.87, 0.), new THREE.Color(0.3, 1.0, 1.0), new THREE.Color(1.0, 0.6, 0.4), new THREE.Color(0.5, 1.0, 0.5), new THREE.Color(0.7, 0.7, 1.0), new THREE.Color(1.0, 0.8, 0.4), new THREE.Color(0.4, 0.8, 1.0), new THREE.Color(0.85, 0.6, 1.0), new THREE.Color(1.0, 0.4, 0.8), new THREE.Color(0.4, 1.0, 0.8)];
+const colorTable = [new THREE.Color(1.0, 0.4, 1.0), new THREE.Color(0.87, 0.87, 0.0), new THREE.Color(0.0, 1.0, 1.0), new THREE.Color(1.0, 0.4, 0.1), new THREE.Color(0.25, 1.0, 0.25), new THREE.Color(0.55, 0.55, 1.0), new THREE.Color(1.0, 0.7, 0.1), new THREE.Color(0.1, 0.7, 1.0), new THREE.Color(0.775, 0.4, 1.0), new THREE.Color(1.0, 0.1, 0.7), new THREE.Color(0.1, 1.0, 0.7)];
 
 // 上の色の表を元にしてMaterialの表を作る。
 const materialTable = colorTable.map(c => {
