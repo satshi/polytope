@@ -239,17 +239,17 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     contents.appendChild(renderer.domElement);
 
     // 平行光源を生成
-    const light = new THREE.DirectionalLight(0xffffff, 2.0);
+    const light = new THREE.DirectionalLight(0xffffff, 3.0);
     light.position.set(-2, 2, 2);
     scene.add(light);
 
     // アンビエントライトを生成
-    const ambientLight = new THREE.AmbientLight(new THREE.Color(0x444444));
+    const ambientLight = new THREE.AmbientLight(new THREE.Color(0x555555));
     ambientLight.position.set(1, 1, 1);
     scene.add(ambientLight);
 
     //フォグを生成
-    scene.fog = new THREE.Fog(0xaaaaaa, 1.8, 6.5);
+    scene.fog = new THREE.Fog(0xaaaaaa, 1.6, 5.5);
 
     //アニメーションの設定
     if(animationFrame){
