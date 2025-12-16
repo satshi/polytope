@@ -249,7 +249,7 @@ function init(prePolytope:Object, mode:string="Solid"): void{
     scene.add(ambientLight);
 
     //フォグを生成
-    scene.fog = new THREE.Fog(0xaaaaaa, 1.6, 5.5);
+    scene.fog = new THREE.Fog(0xaaaaaa, 1.7, 6.0);
 
     //アニメーションの設定
     if(animationFrame){
