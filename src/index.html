@@ -39,7 +39,14 @@
 
 
     </div>
-    <script src="./main.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js"
+            }
+        }
+    </script>
+    <script type="module" src="./main.js"></script>
 </body>
 
 </html>

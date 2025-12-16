@@ -4,21 +4,18 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "webpack --mode=production",
-    "watch": "webpack --watch"
+    "build": "npm run clean && tsc && npm run copy-assets",
+    "watch": "tsc -w",
+    "clean": "rm -rf dist",
+    "copy-assets": "cp src/index.html dist/ && cp src/style.css dist/ && cp -r src/data dist/"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "ts-loader": "^9.5.4",
-    "typescript": "^5.9.3",
-    "webpack": "^5.103.0",
-    "webpack-cli": "^6.0.1"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
-    "copy-webpack-plugin": "^13.0.1",
     "npm": "^11.7.0",
-    "three": "^0.182.0",
-    "write-file-webpack-plugin": "^4.5.1"
+    "three": "^0.182.0"
   }
 }
