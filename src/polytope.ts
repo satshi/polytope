@@ -1,6 +1,14 @@
 import * as THREE from "three";
 import { Vector4, Vector3 } from "three";
 
+export interface PrePolytope {
+    vertices: number[][];
+    faces: number[][];
+    facetCenters: number[][];
+    facetToVertex?: number[][];
+    facetToFace?: number[][];
+}
+
 //小さい数
 const EPSILON = 1.0e-5;
 
@@ -33,10 +41,8 @@ function distance(v1: Vector4, v2: Vector4): number {
 
 // 0から(n-1)までの整数を全体集合とする。その部分集合の包含関係をチェックするためのクラス。
 class SubsetChecker {
-    n: number;
     elements: boolean[];
     constructor(n: number) {
-        this.n = n;
         this.elements = new Array(n).fill(false);
     }
     clear() {
@@ -144,14 +150,14 @@ const materialTable = colorTable.map(c => {
 // ４次元中の３次元多面体のクラス。４次元多胞体の胞を表すのに使う。
 const tempVec3 = new THREE.Vector3();
 export class Facet {
-    vertices: Vector4[];
-    faces: number[][];
-    normal: Vector4;//規格化されている。
-    triangleVertices: Vector4[]; //geometryに使うための頂点
+    vertices: Vector4[] = [];
+    faces: number[][] = [];
+    normal = new Vector4();//規格化されている。
+    triangleVertices: Vector4[] = []; //geometryに使うための頂点
     //    face3List: THREE.Face3[];  //geometryに使うためのFace3のリスト
-    geometry: THREE.BufferGeometry; //geometry
-    mesh: THREE.Mesh;
-    projector: Projector;
+    geometry: THREE.BufferGeometry | null = null; //geometry
+    mesh: THREE.Mesh | null = null;
+    projector: Projector | null = null;
     // 普通にgeometryを作る。
     makeSolidGeometry() {
         this.geometry = new THREE.BufferGeometry();
@@ -199,6 +205,9 @@ export class Facet {
     }
     // とりあえず３次元頂点を意味のない値で初期化。
     initGeometryVertices() {
+        if (!this.geometry) {
+            throw new Error("Geometry is not initialized.");
+        }
         const vertices3 = new Float32Array(this.triangleVertices.length * 3);
         this.geometry.setAttribute('position', new THREE.BufferAttribute(vertices3, 3));
     }
@@ -208,6 +217,9 @@ export class Facet {
 
     // 射影した頂点を作る。
     projectVertices() {
+        if (!this.geometry || !this.projector) {
+            throw new Error("Facet is not initialized.");
+        }
         const positions = this.geometry.attributes.position;
         for (let i = 0; i < this.triangleVertices.length; i++) {
             this.projector.project(tempVec3, this.triangleVertices[i]);
@@ -217,34 +229,42 @@ export class Facet {
     }
     // 胞が見える方にあるかのチェック
     checkVisibility() {
+        if (!this.mesh || !this.projector) {
+            return;
+        }
         this.mesh.visible = this.projector.ifVisible(this.normal);
     }
     // メッシュを作る
     makeMesh() {
+        if (!this.geometry) {
+            throw new Error("Geometry is not initialized.");
+        }
         this.mesh = new THREE.Mesh(this.geometry, materialTable[this.faces.length % 11]);
     }
     // 破棄
     dispose() {
-        this.mesh.geometry.dispose();
+        this.geometry?.dispose();
+        this.geometry = null;
+        this.mesh = null;
     }
 }
 
 
 
 export class Polytope {
-    vertices: Vector4[]; //頂点
-    faces: number[][];  //面
-    facetList: Facet[];  //胞のリスト
-    facetCenter: Vector4[]; //胞の中心のリスト
-    facetToVertex: number[][];//各胞に含まれる頂点のリスト
-    facetToFace: number[][];//各胞に含まれる面のリスト
-    projector: Projector;  // 射影の仕方。あるいは向き。
-    object3D: THREE.Group; //全部まとめた３次元のオブジェクト
-    prePolytope: Object; //JSONファイル出力のため用のデータ
+    vertices: Vector4[] = []; //頂点
+    faces: number[][] = [];  //面
+    facetList: Facet[] = [];  //胞のリスト
+    facetCenter: Vector4[] = []; //胞の中心のリスト
+    facetToVertex?: number[][];//各胞に含まれる頂点のリスト
+    facetToFace?: number[][];//各胞に含まれる面のリスト
+    projector = new Projector();  // 射影の仕方。あるいは向き。
+    object3D = new THREE.Group(); //全部まとめた３次元のオブジェクト
+    prePolytope: PrePolytope | null = null; //JSONファイル出力のため用のデータ
 
     // JSONからそのまま読み込んだObjectから作って必要な初期化やる。
     // type はSolidかFrame
-    initFromPrePolytope(prePolytope: Object, type: string = "Solid") {
+    initFromPrePolytope(prePolytope: PrePolytope, type: "Solid" | "Frame" = "Solid") {
         this.readJSONFile(prePolytope);
         this.initProjector();
         this.makeFacetList();
@@ -254,18 +274,18 @@ export class Polytope {
         } else if (type == "Frame") {
             this.makeFrameGeometry();
         } else {
-            throw 'Type must be "Solid" or "Frame"';
+            throw new Error('Type must be "Solid" or "Frame"');
         }
         this.prePolytope = prePolytope;
         return this;
     }
     // JSONからそのまま読み込んだObjectから作る。
-    readJSONFile(prePolytope: Object) {
-        this.vertices = vector4list(prePolytope["vertices"]);
-        this.faces = prePolytope["faces"];
-        this.facetCenter = vector4list(prePolytope["facetCenters"]);
-        this.facetToVertex = prePolytope["facetToVertex"];
-        this.facetToFace = prePolytope["facetToFace"];
+    readJSONFile(prePolytope: PrePolytope) {
+        this.vertices = vector4list(prePolytope.vertices);
+        this.faces = prePolytope.faces;
+        this.facetCenter = vector4list(prePolytope.facetCenters);
+        this.facetToVertex = prePolytope.facetToVertex;
+        this.facetToFace = prePolytope.facetToFace;
         normalize(this.vertices);
         normalize(this.facetCenter);
         return this;
@@ -296,6 +316,9 @@ export class Polytope {
     }
     // 各胞の面のリストを作る。
     makeFacetToFace() {
+        if (!this.facetToVertex) {
+            throw new Error("Facet vertices must be initialized before facet faces.");
+        }
         const facetSetChecker = new SubsetChecker(this.vertices.length);
         this.facetToFace = new Array(this.facetCenter.length);
         for (let i = 0; i < this.facetCenter.length; i++) {
@@ -323,9 +346,14 @@ export class Polytope {
         if (!this.facetToFace) {
             this.makeFacetToFace();
         }
+        if (!this.facetToVertex || !this.facetToFace) {
+            throw new Error("Facet index data could not be initialized.");
+        }
+        const facetToVertex = this.facetToVertex;
+        const facetToFace = this.facetToFace;
         for (let i = 0; i < this.facetCenter.length; i++) {
-            const facetVertexList = this.facetToVertex[i];
-            const facesInTheFacet = this.facetToFace[i];
+            const facetVertexList = facetToVertex[i];
+            const facesInTheFacet = facetToFace[i];
             // 胞ごとに頂点をcloneして頂点のリストを作る。
             const facetVertices: Vector4[] = new Array(facetVertexList.length);
             for (let j = 0; j < facetVertexList.length; j++) {
@@ -372,7 +400,9 @@ export class Polytope {
         this.object3D = new THREE.Group();
         for (let f of this.facetList) {
             f.makeSolidGeometry();
-            this.object3D.add(f.mesh);
+            if (f.mesh) {
+                this.object3D.add(f.mesh);
+            }
         }
         return this;
     }
@@ -382,7 +412,9 @@ export class Polytope {
         this.object3D = new THREE.Group();
         for (let f of this.facetList) {
             f.makeFrameGeometry();
-            this.object3D.add(f.mesh);
+            if (f.mesh) {
+                this.object3D.add(f.mesh);
+            }
         }
         return this;
     }
@@ -420,8 +452,11 @@ export class Polytope {
     }
     //詳しい情報も加えたJSONファイルを出力
     getFullJSONData(): string {
-        this.prePolytope["facetToVertex"] = this.facetToVertex;
-        this.prePolytope["facetToFace"] = this.facetToFace;
+        if (!this.prePolytope) {
+            throw new Error("Polytope data is not initialized.");
+        }
+        this.prePolytope.facetToVertex = this.facetToVertex;
+        this.prePolytope.facetToFace = this.facetToFace;
         return JSON.stringify(this.prePolytope);
     }
 }

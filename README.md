@@ -2,22 +2,22 @@
 
 [日本語の説明はこちら](README.jp.md)
 
-This is 4D Polytope Viewer written by typescript and three.js. You can see most 4D convex uniform polytopes and rotate them.
+This is a 4D polytope viewer written in TypeScript and three.js. You can view and rotate most 4D convex uniform polytopes.
 
 [![A screenshot](img/screenshot.jpeg "A screenshot")](https://youtu.be/hjcY2zeuUDM)
 
 ## Getting started
 
-1. [Go to here.](https://satshi.github.io/app/)
-2. Push the "View" button.
+1. [Open the app.](https://satshi.github.io/app/)
+2. Click the "View" button.
 
 Then you will see a rotating 4D cube.
 
-## What is next?
+## Next steps
 
 ### Control
 
-By pushing buttons in the "Control" section, you can change the control mode.
+Use the buttons in the "Control" section to change the control mode.
 
 * Auto: It rotates automatically.
 * Stop: It stops.
@@ -28,16 +28,16 @@ By pushing buttons in the "Control" section, you can change the control mode.
 
 1. Select a polytope class from the drop-down list on the left.
 2. Select a polytope from the drop-down list on the right.
-3. Push the "View" button.
+3. Click the "View" button.
 
 Then you will see the polytope.
 
 ### Frame view
 
-If you check the checkbox of "Frame" and press the "View" button, the polytope will be displayed in frame mode.
+If you check "Frame" and click the "View" button, the polytope will be displayed in frame mode.
 
 ## About polytopes
-Wikipedia page [Uniform 4-polytope](https://en.wikipedia.org/wiki/Uniform_4-polytope) includes a nice explanation.  The name of polytopes in "**-cell series" in this app are based on Coxeter diagrams. 0 in this app corresponds to ● in the Coxeter diagram and 1 corresponds to ◉. Thus, for example, 0101 in this app corresponds to Coxeter diagram ●－◉－●－◉.  "Snub" in this app corresponds to ◯－◯－◯－◯.
+The Wikipedia page [Uniform 4-polytope](https://en.wikipedia.org/wiki/Uniform_4-polytope) has a good explanation.  The names of polytopes in the "**-cell series" in this app are based on Coxeter diagrams. In this app, 0 corresponds to ● in the Coxeter diagram, and 1 corresponds to ◉. Thus, for example, 0101 in this app corresponds to the Coxeter diagram ●－◉－●－◉.  "Snub" in this app corresponds to ◯－◯－◯－◯.
 
 
 ## Other information

@@ -7,15 +7,15 @@
     "build": "npm run clean && tsc && npm run copy-assets",
     "watch": "tsc -w",
     "clean": "rm -rf dist",
-    "copy-assets": "cp src/index.html dist/ && cp src/style.css dist/ && cp -r src/data dist/"
+    "copy-assets": "cp src/index.html dist/ && cp src/style.css dist/ && cp -r src/data dist/ && mkdir -p dist/vendor && cp node_modules/three/build/three.module.js node_modules/three/build/three.core.js dist/vendor/"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/three": "^0.184.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "npm": "^11.7.0",
     "three": "^0.182.0"
   }
 }

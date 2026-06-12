@@ -4,7 +4,7 @@
 
 ### vertices
 
-List of the coordinates of the vertices. This is mandatory.
+A list of vertex coordinates. This field is mandatory.
 
 ```
 "vertices":[
@@ -19,7 +19,7 @@ List of the coordinates of the vertices. This is mandatory.
 
 ### faces
 
-List of the faces. This is mandatory. A face contains a list of indices of vertices.  The numbering of vertices is zero-based.  Two neighboring vertices must be connected by an edge.  The orientation is arbitrary.
+A list of faces. This field is mandatory. Each face is a list of vertex indices.  Vertex numbering is zero-based.  Two neighboring vertices must be connected by an edge.  The orientation is arbitrary.
 
 ```
 "faces":[
@@ -32,7 +32,7 @@ List of the faces. This is mandatory. A face contains a list of indices of verti
 
 ### facetCenters
 
-List of the coordinates of the centers of facets.  This is mandatory.
+A list of facet center coordinates.  This field is mandatory.
 
 ```
 "facetCenters":[
@@ -46,7 +46,7 @@ List of the coordinates of the centers of facets.  This is mandatory.
 
 ### facetToVertex
 
-List of the indices of vertices which belongs to each facet. This is optional.  The numbering of vertices is zero-based.  These data help to start up quickly.
+A list of vertex indices that belong to each facet. This field is optional.  Vertex numbering is zero-based.  This data helps the viewer start faster.
 
 ```
 "facetToVertex":[
@@ -60,7 +60,7 @@ List of the indices of vertices which belongs to each facet. This is optional.  
 
 ### facetToFace
 
-List of the indices of faces which belongs to each facet. This is optional.  The numbering of faces is zero-based.  These data help to start up quickly.
+A list of face indices that belong to each facet. This field is optional.  Face numbering is zero-based.  This data helps the viewer start faster.
 
 ```
 "facetToFace":[
