@@ -43,3 +43,24 @@ Wikipedia のページ [Uniform 4-polytope](https://en.wikipedia.org/wiki/Unifor
 ## その他の情報
 
 [多胞体の JSON フォーマット](format.md)
+
+## 開発
+
+Node.js 20.19 以降と pnpm 11.9.0 が必要です。
+
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+開発サーバーを起動すると、開くURLが表示されます。その他のコマンド:
+
+```sh
+# dist/ に本番用ファイルを生成
+pnpm build
+
+# 型チェック、ビルド、全テストを実行
+pnpm check
+
+# 本番用ビルドをプレビュー

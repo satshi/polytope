@@ -43,3 +43,24 @@ The Wikipedia page [Uniform 4-polytope](https://en.wikipedia.org/wiki/Uniform_4-
 ## Other information
 
 [JSON data format for polytopes](format.md)
+
+## Development
+
+Node.js 20.19 or later and pnpm 11.9.0 are required.
+
+```sh
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev
+```
+
+The development server prints the local URL to open. Other commands:
+
+```sh
+# Production build in dist/
+pnpm build
+
+# Type-check, build, and run all tests
+pnpm check
+
+# Preview the production build

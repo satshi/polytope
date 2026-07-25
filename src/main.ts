@@ -12,6 +12,11 @@ import {
 
 type DisplayMode = "Solid" | "Frame";
 type ControlMode = "auto" | "stop" | "rotate3d" | "rotate4d";
+const polytopeDataUrls = import.meta.glob<string>("./data/*.json", {
+    eager: true,
+    query: "?url",
+    import: "default",
+});
 
 
 const MOUSE_DOWN = 'pointerdown';
@@ -52,8 +57,6 @@ contents.addEventListener(MOUSE_UP, preventContentScroll, { passive: false });
 let activeLoadController: AbortController | null = null;
 
 async function main(): Promise<void> {
-    const dataDir = 'data/';
-    const dataExt = '.json';
     const controller = new AbortController();
     activeLoadController?.abort();
     activeLoadController = controller;
@@ -63,7 +66,10 @@ async function main(): Promise<void> {
     try {
         const basename = getBaseName();
         const mode: DisplayMode = frameCheckbox.checked ? "Frame" : "Solid";
-        const fullname = dataDir + basename + dataExt;
+        const fullname = polytopeDataUrls[`./data/${basename}.json`];
+        if (!fullname) {
+            throw new Error(`Bundled data was not found for ${basename}.`);
+        }
         const response = await fetch(fullname, { signal: controller.signal });
         if (!response.ok) {
             throw new Error(`${response.status} ${response.statusText}`);

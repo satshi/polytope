@@ -7,12 +7,12 @@ import {
     AUTO_ROTATION_SPEED,
     MAX_ANIMATION_STEP_SECONDS,
     automaticRotation,
-} from "../dist/animation.js";
+} from "../.test-dist/animation.js";
 import {
     PolytopeDataError,
     parsePrePolytope,
-} from "../dist/data-validation.js";
-import { Polytope, rotationMatrix4 } from "../dist/polytope.js";
+} from "../.test-dist/data-validation.js";
+import { Polytope, rotationMatrix4 } from "../.test-dist/polytope.js";
 
 const DATA_DIRECTORY = new URL("../src/data/", import.meta.url);
 

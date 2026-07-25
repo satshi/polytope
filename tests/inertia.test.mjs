@@ -5,7 +5,7 @@ import {
     inertialRotation,
     pointerAngularVelocity,
     pointerRotation,
-} from "../dist/inertia.js";
+} from "../.test-dist/inertia.js";
 
 test("3D and 4D pointer motion continues with the last angular velocity", () => {
     const elapsedSeconds = 1 / 60;

@@ -3,23 +3,26 @@
   "version": "1.1.0",
   "description": "Interactive viewer for convex uniform 4D polytopes",
   "type": "module",
-  "main": "index.js",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "scripts": {
-    "build": "npm run clean && tsc && npm run copy-assets",
-    "watch": "tsc -w",
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "npm run build && node --test",
-    "check": "npm run typecheck && npm test",
-    "clean": "rm -rf dist",
-    "copy-assets": "cp src/index.html dist/ && cp src/style.css dist/ && cp -r src/data dist/ && mkdir -p dist/vendor && cp node_modules/three/build/three.module.js node_modules/three/build/three.core.js dist/vendor/"
+    "test": "tsc --outDir .test-dist --sourceMap false && node --test",
+    "check": "pnpm run build && pnpm test"
   },
   "author": "",
   "license": "0BSD",
   "devDependencies": {
-    "@types/three": "^0.184.1",
-    "typescript": "^5.9.3"
+    "@types/three": "0.185.1",
+    "typescript": "5.9.3",
+    "vite": "8.1.5"
   },
   "dependencies": {
-    "three": "^0.182.0"
+    "three": "0.185.1"
   }
 }
