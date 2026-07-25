@@ -1,11 +1,18 @@
 import * as THREE from "three";
-//import { AlphaFormat } from "three";
-//import * as pu from "./polygon_util";
 import * as pt from "./polytope.js";
+import { parsePrePolytope } from "./data-validation.js";
+import { automaticRotation } from "./animation.js";
+import {
+    inertialRotation,
+    pointerAngularVelocity,
+    pointerRotation,
+    type ManualRotationMode,
+} from "./inertia.js";
 
-//window.addEventListener("DOMContentLoaded", main);
 
 type DisplayMode = "Solid" | "Frame";
+type ControlMode = "auto" | "stop" | "rotate3d" | "rotate4d";
+
 
 const MOUSE_DOWN = 'pointerdown';
 const MOUSE_MOVE = 'pointermove';
@@ -19,17 +26,18 @@ function getElement<T extends HTMLElement>(id: string): T {
     return element as T;
 }
 
-const viewButton = getElement<HTMLSpanElement>("pbtn");
+const viewButton = getElement<HTMLButtonElement>("pbtn");
 const seriesSelect = getElement<HTMLSelectElement>("series");
 const polytopeSelect = getElement<HTMLSelectElement>("polytope");
 const frameCheckbox = getElement<HTMLInputElement>("ifframe");
-const autoButton = getElement<HTMLSpanElement>("auto");
-const stopButton = getElement<HTMLSpanElement>("stop");
-const rotation3DButton = getElement<HTMLSpanElement>("3D-rotation");
-const rotation4DButton = getElement<HTMLSpanElement>("4D-rotation");
+const autoButton = getElement<HTMLButtonElement>("auto");
+const stopButton = getElement<HTMLButtonElement>("stop");
+const rotation3DButton = getElement<HTMLButtonElement>("3D-rotation");
+const rotation4DButton = getElement<HTMLButtonElement>("4D-rotation");
 const contents = getElement<HTMLDivElement>("contents");
+const statusMessage = getElement<HTMLDivElement>("status");
 
-viewButton.addEventListener('click', main);
+viewButton.addEventListener('click', () => void main());
 pullDownMenu();
 seriesSelect.addEventListener('change', pullDownMenu);
 window.addEventListener('resize', onResize, false);
@@ -41,31 +49,53 @@ contents.addEventListener(MOUSE_DOWN, preventContentScroll, { passive: false });
 contents.addEventListener(MOUSE_MOVE, preventContentScroll, { passive: false });
 contents.addEventListener(MOUSE_UP, preventContentScroll, { passive: false });
 
-function main(): void {
+let activeLoadController: AbortController | null = null;
+
+async function main(): Promise<void> {
     const dataDir = 'data/';
     const dataExt = '.json';
-    const basename = getBaseName();
-    //const basename = (<HTMLInputElement> document.getElementById("polytopename")).value;
-    const mode: DisplayMode = frameCheckbox.checked ? "Frame" : "Solid"
-    const fullname = dataDir + basename + dataExt;
-    contents.textContent = 'Please wait.';
-    fetch(fullname)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`${response.status} ${response.statusText}`);
-            }
-            return response.json() as Promise<pt.PrePolytope>;
-        })
-        .then((json) => {
-            init(json, mode);
-        })
-        .catch((error) => {
-            // const fs = require('fs');
-            // fs.readFile(fullname, 'utf8', function (err, data) {
-            //     init(JSON.parse(data), mode);
-            // });
-            alert('Fail to load data:' + String(error));
-        });
+    const controller = new AbortController();
+    activeLoadController?.abort();
+    activeLoadController = controller;
+    viewButton.disabled = true;
+    showStatus("Loading polytope...");
+
+    try {
+        const basename = getBaseName();
+        const mode: DisplayMode = frameCheckbox.checked ? "Frame" : "Solid";
+        const fullname = dataDir + basename + dataExt;
+        const response = await fetch(fullname, { signal: controller.signal });
+        if (!response.ok) {
+            throw new Error(`${response.status} ${response.statusText}`);
+        }
+
+        const data: unknown = await response.json();
+        const prePolytope = parsePrePolytope(data);
+        if (!controller.signal.aborted) {
+            init(prePolytope, mode);
+            hideStatus();
+        }
+    } catch (error) {
+        if (!controller.signal.aborted) {
+            const message = error instanceof Error ? error.message : String(error);
+            showStatus(`Failed to load data: ${message}`, true);
+        }
+    } finally {
+        if (activeLoadController === controller) {
+            activeLoadController = null;
+            viewButton.disabled = false;
+        }
+    }
+}
+
+function showStatus(message: string, isError = false): void {
+    statusMessage.textContent = message;
+    statusMessage.classList.toggle("error", isError);
+    statusMessage.hidden = false;
+}
+
+function hideStatus(): void {
+    statusMessage.hidden = true;
 }
 
 // プルダウンメニューを作る。
@@ -227,14 +257,13 @@ function getBaseName(): string {
     return basename;
 }
 
-var renderer: THREE.WebGLRenderer | null = null;
-var camera: THREE.PerspectiveCamera | null = null;
-var scene: THREE.Scene | null = null;
-var polytope: pt.Polytope | null = null;
-var animationFrame: number | null = null;
-//４次元回転のための行列
-var rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
-var extrarotation = new THREE.Matrix4().identity();
+let renderer: THREE.WebGLRenderer | null = null;
+let camera: THREE.PerspectiveCamera | null = null;
+let scene: THREE.Scene | null = null;
+let polytope: pt.Polytope | null = null;
+let animationFrame: number | null = null;
+let previousAnimationTime: number | null = null;
+let controlMode: ControlMode = "auto";
 
 //  画面を初期化し、物体を置き、アニメーションを定義する。
 // modeは"Solid"または"Frame"
@@ -254,26 +283,12 @@ function init(prePolytope: pt.PrePolytope, mode: DisplayMode = "Solid"): void {
     scene?.add(theObject);
 
     // canvasをcontentsに追加
-    contents.textContent = null;
     if (renderer && !renderer.domElement.parentElement) {
         contents.appendChild(renderer.domElement);
     }
 
-    const tick = (): void => {
-        animationFrame = requestAnimationFrame(tick);
-
-        //    theObject.rotation.x += 0.01;
-        //    theObject.rotation.y += 0.01;
-        polytope?.applyMatrix4(rotation);
-        polytope?.applyMatrix4(extrarotation);
-        polytope?.projectVertices();
-        polytope?.checkVisibility();
-        // 描画
-        if (renderer && scene && camera) {
-            renderer.render(scene, camera);
-        }
-    };
-    tick();
+    renderScene();
+    startAnimation();
 }
 
 function ensureRenderer(): void {
@@ -311,6 +326,7 @@ function stopAnimation(): void {
         window.cancelAnimationFrame(animationFrame);
         animationFrame = null;
     }
+    previousAnimationTime = null;
 }
 
 function disposeCurrentPolytope(): void {
@@ -332,12 +348,13 @@ function onResize() {
     const size = Math.floor(Math.min(width, height));
 
     // レンダラーのサイズを調整する
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(size, size);
 
     // カメラのアスペクト比を正す
     camera.aspect = 1;
     camera.updateProjectionMatrix();
+    renderScene();
 }
 
 ////  ボタンクリックのイベントハンドラ
@@ -349,44 +366,37 @@ function preventContentScroll(event: Event): void {
 
 // 自動的に回転させる。角度とかは決め打ち
 function autoClick() {
-    autoButton.className = "button-on";
-    stopButton.className = "button-off";
-    rotation3DButton.className = "button-off";
-    rotation4DButton.className = "button-off";
-    rotation = pt.rotationMatrix4(0.01, 23).multiply(pt.rotationMatrix4(0.01, 12)).multiply(pt.rotationMatrix4(0.01, 3));
-    extrarotation.identity();
+    setControlMode("auto");
     contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
+    startAnimation();
 }
 
 // 止める。
 function stopClick() {
-    autoButton.className = "button-off";
-    stopButton.className = "button-on";
-    rotation3DButton.className = "button-off";
-    rotation4DButton.className = "button-off";
-    rotation.identity();
-    extrarotation.identity();
+    setControlMode("stop");
     contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
+    stopAnimation();
+    renderScene();
 }
 
 // マウスのドラッグで３次元内での回転する。
 function r3DClick() {
-    autoButton.className = "button-off";
-    stopButton.className = "button-off";
-    rotation3DButton.className = "button-on";
-    rotation4DButton.className = "button-off";
+    setControlMode("rotate3d");
+    stopAnimation();
     contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
+    clearManualInertia();
     rotationMode = 3;
+    renderScene();
 }
 
 // マウスのドラッグで４次元内での回転する。
 function r4DClick() {
-    autoButton.className = "button-off";
-    stopButton.className = "button-off";
-    rotation3DButton.className = "button-off";
-    rotation4DButton.className = "button-on";
+    setControlMode("rotate4d");
+    stopAnimation();
     contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
+    clearManualInertia();
     rotationMode = 4;
+    renderScene();
 }
 
 
@@ -394,18 +404,19 @@ function r4DClick() {
 let onMouseDownMouseX = 0;
 let onMouseDownMouseY = 0;
 //  回転モードの場合の回転の方向。３次元なら3。４次元なら4
-let rotationMode = 3;
+let rotationMode: ManualRotationMode = 3;
+let manualAngularVelocityX = 0;
+let manualAngularVelocityY = 0;
+let previousPointerTime = 0;
 
 function onDocumentMouseDown(event: Event) {
     event.preventDefault();
     const pointerEvent = event as PointerEvent;
     onMouseDownMouseX = pointerEvent.clientX;
     onMouseDownMouseY = pointerEvent.clientY;
-    if (rotationMode == 3) {
-        rotation.identity();
-    } else {
-        extrarotation.identity();
-    }
+    stopAnimation();
+    clearManualInertia();
+    previousPointerTime = pointerEvent.timeStamp;
     contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, { passive: false });
     contents.addEventListener(MOUSE_UP, onDocumentMouseUp, { passive: false });
 }
@@ -415,9 +426,13 @@ function onDocumentMouseMove(event: Event) {
     const pointerEvent = event as PointerEvent;
     const dX = pointerEvent.clientX - onMouseDownMouseX;
     const dY = pointerEvent.clientY - onMouseDownMouseY;
+    const elapsedSeconds = Math.max((pointerEvent.timeStamp - previousPointerTime) / 1000, 0);
     onMouseDownMouseX = pointerEvent.clientX;
     onMouseDownMouseY = pointerEvent.clientY;
-    setRotationMatrix(dX, dY);
+    previousPointerTime = pointerEvent.timeStamp;
+    setRotationMatrix(dX, dY, elapsedSeconds);
+    renderScene();
+    startAnimation();
 }
 
 function onDocumentMouseUp(event: Event) {
@@ -426,11 +441,72 @@ function onDocumentMouseUp(event: Event) {
     contents.removeEventListener(MOUSE_UP, onDocumentMouseUp, false);
 }
 
-function setRotationMatrix(dX: number, dY: number) {
-    const scale = 2 / 1000
-    if (rotationMode == 3) {
-        rotation = pt.rotationMatrix4(dX * scale, 20).multiply(pt.rotationMatrix4(dY * scale, 12));
-    } else {
-        extrarotation = pt.rotationMatrix4(dX * scale, 30).multiply(pt.rotationMatrix4(dY * scale, 13));
+function setRotationMatrix(dX: number, dY: number, elapsedSeconds: number): void {
+    manualAngularVelocityX = pointerAngularVelocity(dX, elapsedSeconds);
+    manualAngularVelocityY = pointerAngularVelocity(dY, elapsedSeconds);
+    polytope?.applyMatrix4(pointerRotation(dX, dY, rotationMode));
+}
+
+function clearManualInertia(): void {
+    manualAngularVelocityX = 0;
+    manualAngularVelocityY = 0;
+}
+
+function hasManualInertia(): boolean {
+    return controlMode !== "auto" && controlMode !== "stop"
+        && (manualAngularVelocityX !== 0 || manualAngularVelocityY !== 0);
+}
+
+function renderScene(): void {
+    polytope?.projectVertices();
+    polytope?.checkVisibility();
+    if (renderer && scene && camera) {
+        renderer.render(scene, camera);
     }
+}
+
+function tick(timestamp: number): void {
+    if (!polytope || (controlMode !== "auto" && !hasManualInertia())) {
+        animationFrame = null;
+        previousAnimationTime = null;
+        return;
+    }
+
+    if (previousAnimationTime !== null) {
+        const elapsedSeconds = (timestamp - previousAnimationTime) / 1000;
+        if (controlMode === "auto") {
+            polytope.applyMatrix4(automaticRotation(elapsedSeconds));
+        } else {
+            polytope.applyMatrix4(inertialRotation(manualAngularVelocityX, manualAngularVelocityY, elapsedSeconds, rotationMode));
+        }
+    }
+    previousAnimationTime = timestamp;
+    renderScene();
+    animationFrame = requestAnimationFrame(tick);
+}
+
+function startAnimation(): void {
+    if (animationFrame !== null || !polytope) {
+        return;
+    }
+    if (controlMode !== "auto" && !hasManualInertia()) {
+        return;
+    }
+    previousAnimationTime = null;
+    animationFrame = requestAnimationFrame(tick);
+}
+
+function setControlMode(mode: ControlMode): void {
+    controlMode = mode;
+    const controls: Array<[HTMLButtonElement, ControlMode]> = [
+        [autoButton, "auto"],
+        [stopButton, "stop"],
+        [rotation3DButton, "rotate3d"],
+        [rotation4DButton, "rotate4d"],
+    ];
+    controls.forEach(([button, buttonMode]) => {
+        const selected = mode === buttonMode;
+        button.className = selected ? "button-on" : "button-off";
+        button.setAttribute("aria-pressed", String(selected));
+    });
 }

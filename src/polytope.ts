@@ -1,13 +1,8 @@
 import * as THREE from "three";
 import { Vector4, Vector3 } from "three";
+import type { PrePolytope } from "./data-validation.js";
 
-export interface PrePolytope {
-    vertices: number[][];
-    faces: number[][];
-    facetCenters: number[][];
-    facetToVertex?: number[][];
-    facetToFace?: number[][];
-}
+export type { PrePolytope } from "./data-validation.js";
 
 //小さい数
 const EPSILON = 1.0e-5;
@@ -140,9 +135,12 @@ const colorTable = [new THREE.Color(1.0, 0.4, 1.0), new THREE.Color(0.87, 0.87, 
 
 // 上の色の表を元にしてMaterialの表を作る。
 const materialTable = colorTable.map(c => {
-    // const material = new THREE.MeshStandardMaterial({ side: THREE.DoubleSide, metalness:0, flatShading: true });
-    const material = new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, specular: 0x888888, shininess: 30,  flatShading: true });
-    // const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide});
+    // With flatShading, Three.js derives face normals in the fragment shader.
+    // This remains correct while projected positions change every frame,
+    // without an expensive CPU-side computeVertexNormals() call.
+    const material = new THREE.MeshPhongMaterial({
+        side: THREE.DoubleSide, specular: 0x888888, shininess: 30, flatShading: true,
+    });
     material.color = c;
     return material;
 });

@@ -92,3 +92,37 @@ html, body{
     transform : translate(-50%,-50%);
     -webkit-touch-callout: none;
 }
+
+#status {
+    position: fixed;
+    z-index: 2;
+    left: 50%;
+    bottom: 1rem;
+    max-width: min(90vw, 50rem);
+    padding: 0.6rem 0.9rem;
+    transform: translateX(-50%);
+    border: 1px solid #333333;
+    border-radius: 5px;
+    color: #111111;
+    background: rgba(255, 255, 255, 0.92);
+}
+
+#status.error {
+    color: #7d0000;
+    border-color: #7d0000;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+button:focus-visible {
+    outline: 3px solid #ffffff;
+    outline-offset: 2px;
+}
+
+button:disabled {
+    cursor: wait;
+    opacity: 0.65;
+}

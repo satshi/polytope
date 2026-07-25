@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -9,13 +9,14 @@
 </head>
 
 <body>
+    <div id="status" role="status" aria-live="polite" hidden></div>
     <div id="container">
     <div id="contents">
     </div>
     <div class="head">
     <div class="buttons">
-        <input type="checkbox" id="ifframe">Frame　
-        <select id="series">
+        <label><input type="checkbox" id="ifframe"> Frame</label>
+        <select id="series" aria-label="Polytope series">
             <option value="examples">Simple examples</option>
             <option value="5">5-cell series</option>
             <option value="8">8-16-cell series</option>
@@ -23,16 +24,16 @@
             <option value="120">120-600-cell series</option>
             <option value="others">Others</option>
         </select>
-        <select id="polytope">
+        <select id="polytope" aria-label="Polytope">
         </select>
-        <span class="view-button" id="pbtn">View</span>
+        <button type="button" class="view-button" id="pbtn">View</button>
     </div>
     <div class="buttons">
         &nbsp; Control:
-        <span class="button-on" id="auto">Auto</span>
-        <span class="button-off" id="stop">Stop</span>
-        <span class="button-off" id="3D-rotation">3D move</span>
-        <span class="button-off" id="4D-rotation">4D move</span>
+        <button type="button" class="button-on" id="auto" aria-pressed="true">Auto</button>
+        <button type="button" class="button-off" id="stop" aria-pressed="false">Stop</button>
+        <button type="button" class="button-off" id="3D-rotation" aria-pressed="false">3D move</button>
+        <button type="button" class="button-off" id="4D-rotation" aria-pressed="false">4D move</button>
     </div>
     </div>
 
