@@ -64,3 +64,5 @@ pnpm build
 pnpm check
 
 # 本番用ビルドをプレビュー
+pnpm preview
+```

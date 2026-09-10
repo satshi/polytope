@@ -64,3 +64,5 @@ pnpm build
 pnpm check
 
 # Preview the production build
+pnpm preview
+```
