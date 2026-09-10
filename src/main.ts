@@ -3,6 +3,10 @@ import * as pt from "./polytope.js";
 import { parsePrePolytope } from "./data-validation.js";
 import { automaticRotation } from "./animation.js";
 import {
+    RotationActivity,
+    type ControlMode,
+} from "./control-state.js";
+import {
     inertialRotation,
     pointerAngularVelocity,
     pointerRotation,
@@ -11,7 +15,6 @@ import {
 
 
 type DisplayMode = "Solid" | "Frame";
-type ControlMode = "auto" | "stop" | "rotate3d" | "rotate4d";
 const polytopeDataUrls = import.meta.glob<string>("./data/*.json", {
     eager: true,
     query: "?url",
@@ -270,6 +273,7 @@ let polytope: pt.Polytope | null = null;
 let animationFrame: number | null = null;
 let previousAnimationTime: number | null = null;
 let controlMode: ControlMode = "auto";
+const rotationActivity = new RotationActivity();
 
 //  画面を初期化し、物体を置き、アニメーションを定義する。
 // modeは"Solid"または"Frame"
@@ -373,6 +377,8 @@ function preventContentScroll(event: Event): void {
 // 自動的に回転させる。角度とかは決め打ち
 function autoClick() {
     setControlMode("auto");
+    stopAnimation();
+    rotationActivity.restartAutomatic();
     contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
     startAnimation();
 }
@@ -380,6 +386,7 @@ function autoClick() {
 // 止める。
 function stopClick() {
     setControlMode("stop");
+    rotationActivity.stopAll();
     contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
     stopAnimation();
     renderScene();
@@ -388,21 +395,17 @@ function stopClick() {
 // マウスのドラッグで３次元内での回転する。
 function r3DClick() {
     setControlMode("rotate3d");
-    stopAnimation();
     contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
-    clearManualInertia();
     rotationMode = 3;
-    renderScene();
+    startAnimation();
 }
 
 // マウスのドラッグで４次元内での回転する。
 function r4DClick() {
     setControlMode("rotate4d");
-    stopAnimation();
     contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
-    clearManualInertia();
     rotationMode = 4;
-    renderScene();
+    startAnimation();
 }
 
 
@@ -411,8 +414,6 @@ let onMouseDownMouseX = 0;
 let onMouseDownMouseY = 0;
 //  回転モードの場合の回転の方向。３次元なら3。４次元なら4
 let rotationMode: ManualRotationMode = 3;
-let manualAngularVelocityX = 0;
-let manualAngularVelocityY = 0;
 let previousPointerTime = 0;
 
 function onDocumentMouseDown(event: Event) {
@@ -420,8 +421,6 @@ function onDocumentMouseDown(event: Event) {
     const pointerEvent = event as PointerEvent;
     onMouseDownMouseX = pointerEvent.clientX;
     onMouseDownMouseY = pointerEvent.clientY;
-    stopAnimation();
-    clearManualInertia();
     previousPointerTime = pointerEvent.timeStamp;
     contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, { passive: false });
     contents.addEventListener(MOUSE_UP, onDocumentMouseUp, { passive: false });
@@ -448,19 +447,12 @@ function onDocumentMouseUp(event: Event) {
 }
 
 function setRotationMatrix(dX: number, dY: number, elapsedSeconds: number): void {
-    manualAngularVelocityX = pointerAngularVelocity(dX, elapsedSeconds);
-    manualAngularVelocityY = pointerAngularVelocity(dY, elapsedSeconds);
+    rotationActivity.setManualVelocity(
+        rotationMode,
+        pointerAngularVelocity(dX, elapsedSeconds),
+        pointerAngularVelocity(dY, elapsedSeconds),
+    );
     polytope?.applyMatrix4(pointerRotation(dX, dY, rotationMode));
-}
-
-function clearManualInertia(): void {
-    manualAngularVelocityX = 0;
-    manualAngularVelocityY = 0;
-}
-
-function hasManualInertia(): boolean {
-    return controlMode !== "auto" && controlMode !== "stop"
-        && (manualAngularVelocityX !== 0 || manualAngularVelocityY !== 0);
 }
 
 function renderScene(): void {
@@ -472,7 +464,7 @@ function renderScene(): void {
 }
 
 function tick(timestamp: number): void {
-    if (!polytope || (controlMode !== "auto" && !hasManualInertia())) {
+    if (!polytope || !rotationActivity.hasMotion()) {
         animationFrame = null;
         previousAnimationTime = null;
         return;
@@ -480,10 +472,19 @@ function tick(timestamp: number): void {
 
     if (previousAnimationTime !== null) {
         const elapsedSeconds = (timestamp - previousAnimationTime) / 1000;
-        if (controlMode === "auto") {
+        if (rotationActivity.automatic) {
             polytope.applyMatrix4(automaticRotation(elapsedSeconds));
-        } else {
-            polytope.applyMatrix4(inertialRotation(manualAngularVelocityX, manualAngularVelocityY, elapsedSeconds, rotationMode));
+        }
+        for (const mode of [3, 4] as const) {
+            if (rotationActivity.hasManual(mode)) {
+                const velocity = rotationActivity.manual[mode];
+                polytope.applyMatrix4(inertialRotation(
+                    velocity.x,
+                    velocity.y,
+                    elapsedSeconds,
+                    mode,
+                ));
+            }
         }
     }
     previousAnimationTime = timestamp;
@@ -495,7 +496,7 @@ function startAnimation(): void {
     if (animationFrame !== null || !polytope) {
         return;
     }
-    if (controlMode !== "auto" && !hasManualInertia()) {
+    if (!rotationActivity.hasMotion()) {
         return;
     }
     previousAnimationTime = null;
