@@ -22,10 +22,6 @@ const polytopeDataUrls = import.meta.glob<string>("./data/*.json", {
 });
 
 
-const MOUSE_DOWN = 'pointerdown';
-const MOUSE_MOVE = 'pointermove';
-const MOUSE_UP = 'pointerup';
-
 function getElement<T extends HTMLElement>(id: string): T {
     const element = document.getElementById(id);
     if (!element) {
@@ -53,9 +49,12 @@ autoButton.addEventListener('click', autoClick);
 stopButton.addEventListener('click', stopClick);
 rotation3DButton.addEventListener('click', r3DClick);
 rotation4DButton.addEventListener('click', r4DClick);
-contents.addEventListener(MOUSE_DOWN, preventContentScroll, { passive: false });
-contents.addEventListener(MOUSE_MOVE, preventContentScroll, { passive: false });
-contents.addEventListener(MOUSE_UP, preventContentScroll, { passive: false });
+contents.addEventListener('pointerdown', onPointerDown);
+contents.addEventListener('pointermove', onPointerMove);
+contents.addEventListener('pointerup', onPointerUp);
+contents.addEventListener('pointercancel', onPointerCancel);
+contents.addEventListener('lostpointercapture', onPointerCancel);
+window.addEventListener('blur', () => finishDrag(true));
 
 let activeLoadController: AbortController | null = null;
 
@@ -278,6 +277,7 @@ const rotationActivity = new RotationActivity();
 //  画面を初期化し、物体を置き、アニメーションを定義する。
 // modeは"Solid"または"Frame"
 function init(prePolytope: pt.PrePolytope, mode: DisplayMode = "Solid"): void {
+    finishDrag(true);
     stopAnimation();
     disposeCurrentPolytope();
     ensureRenderer();
@@ -369,17 +369,11 @@ function onResize() {
 
 ////  ボタンクリックのイベントハンドラ
 
-function preventContentScroll(event: Event): void {
-    event.preventDefault();
-}
-
-
 // 自動的に回転させる。角度とかは決め打ち
 function autoClick() {
     setControlMode("auto");
     stopAnimation();
     rotationActivity.restartAutomatic();
-    contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
     startAnimation();
 }
 
@@ -387,7 +381,6 @@ function autoClick() {
 function stopClick() {
     setControlMode("stop");
     rotationActivity.stopAll();
-    contents.removeEventListener(MOUSE_DOWN, onDocumentMouseDown, false);
     stopAnimation();
     renderScene();
 }
@@ -395,58 +388,97 @@ function stopClick() {
 // マウスのドラッグで３次元内での回転する。
 function r3DClick() {
     setControlMode("rotate3d");
-    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
-    rotationMode = 3;
     startAnimation();
 }
 
 // マウスのドラッグで４次元内での回転する。
 function r4DClick() {
     setControlMode("rotate4d");
-    contents.addEventListener(MOUSE_DOWN, onDocumentMouseDown, { passive: false });
-    rotationMode = 4;
     startAnimation();
 }
 
 
-////// マウスのドラッグで多胞体を回転させる用の変数や関数
-let onMouseDownMouseX = 0;
-let onMouseDownMouseY = 0;
-//  回転モードの場合の回転の方向。３次元なら3。４次元なら4
-let rotationMode: ManualRotationMode = 3;
-let previousPointerTime = 0;
-
-function onDocumentMouseDown(event: Event) {
-    event.preventDefault();
-    const pointerEvent = event as PointerEvent;
-    onMouseDownMouseX = pointerEvent.clientX;
-    onMouseDownMouseY = pointerEvent.clientY;
-    previousPointerTime = pointerEvent.timeStamp;
-    contents.addEventListener(MOUSE_MOVE, onDocumentMouseMove, { passive: false });
-    contents.addEventListener(MOUSE_UP, onDocumentMouseUp, { passive: false });
+interface PointerDrag {
+    pointerId: number;
+    mode: ManualRotationMode;
+    x: number;
+    y: number;
+    time: number;
 }
 
-function onDocumentMouseMove(event: Event) {
+let activeDrag: PointerDrag | null = null;
+
+function onPointerDown(event: PointerEvent): void {
+    if (
+        !polytope || activeDrag || !event.isPrimary || event.button !== 0
+        || (controlMode !== "rotate3d" && controlMode !== "rotate4d")
+    ) {
+        return;
+    }
     event.preventDefault();
-    const pointerEvent = event as PointerEvent;
-    const dX = pointerEvent.clientX - onMouseDownMouseX;
-    const dY = pointerEvent.clientY - onMouseDownMouseY;
-    const elapsedSeconds = Math.max((pointerEvent.timeStamp - previousPointerTime) / 1000, 0);
-    onMouseDownMouseX = pointerEvent.clientX;
-    onMouseDownMouseY = pointerEvent.clientY;
-    previousPointerTime = pointerEvent.timeStamp;
-    setRotationMatrix(dX, dY, elapsedSeconds);
+    activeDrag = {
+        pointerId: event.pointerId,
+        mode: controlMode === "rotate3d" ? 3 : 4,
+        x: event.clientX,
+        y: event.clientY,
+        time: event.timeStamp,
+    };
+    contents.setPointerCapture(event.pointerId);
+}
+
+function onPointerMove(event: PointerEvent): void {
+    const drag = activeDrag;
+    if (!drag || drag.pointerId !== event.pointerId) {
+        return;
+    }
+    if ((event.buttons & 1) === 0) {
+        finishDrag(true);
+        return;
+    }
+    event.preventDefault();
+    const dX = event.clientX - drag.x;
+    const dY = event.clientY - drag.y;
+    const elapsedSeconds = Math.max((event.timeStamp - drag.time) / 1000, 0);
+    drag.x = event.clientX;
+    drag.y = event.clientY;
+    drag.time = event.timeStamp;
+    setRotationMatrix(dX, dY, elapsedSeconds, drag.mode);
     renderScene();
     startAnimation();
 }
 
-function onDocumentMouseUp(event: Event) {
-    event.preventDefault();
-    contents.removeEventListener(MOUSE_MOVE, onDocumentMouseMove, false);
-    contents.removeEventListener(MOUSE_UP, onDocumentMouseUp, false);
+function onPointerUp(event: PointerEvent): void {
+    if (activeDrag?.pointerId === event.pointerId) {
+        finishDrag();
+    }
 }
 
-function setRotationMatrix(dX: number, dY: number, elapsedSeconds: number): void {
+function onPointerCancel(event: PointerEvent): void {
+    if (activeDrag?.pointerId === event.pointerId) {
+        finishDrag(true);
+    }
+}
+
+function finishDrag(cancelled = false): void {
+    const drag = activeDrag;
+    if (!drag) {
+        return;
+    }
+    activeDrag = null;
+    if (cancelled) {
+        rotationActivity.setManualVelocity(drag.mode, 0, 0);
+    }
+    if (contents.hasPointerCapture(drag.pointerId)) {
+        contents.releasePointerCapture(drag.pointerId);
+    }
+}
+
+function setRotationMatrix(
+    dX: number,
+    dY: number,
+    elapsedSeconds: number,
+    rotationMode: ManualRotationMode,
+): void {
     rotationActivity.setManualVelocity(
         rotationMode,
         pointerAngularVelocity(dX, elapsedSeconds),
@@ -476,7 +508,7 @@ function tick(timestamp: number): void {
             polytope.applyMatrix4(automaticRotation(elapsedSeconds));
         }
         for (const mode of [3, 4] as const) {
-            if (rotationActivity.hasManual(mode)) {
+            if (activeDrag?.mode !== mode && rotationActivity.hasManual(mode)) {
                 const velocity = rotationActivity.manual[mode];
                 polytope.applyMatrix4(inertialRotation(
                     velocity.x,
@@ -504,6 +536,7 @@ function startAnimation(): void {
 }
 
 function setControlMode(mode: ControlMode): void {
+    finishDrag();
     controlMode = mode;
     const controls: Array<[HTMLButtonElement, ControlMode]> = [
         [autoButton, "auto"],

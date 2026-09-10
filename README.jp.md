@@ -46,7 +46,7 @@ Wikipedia のページ [Uniform 4-polytope](https://en.wikipedia.org/wiki/Unifor
 
 ## 開発
 
-Node.js 20.19 以降と pnpm 11.9.0 が必要です。
+Node.js 22.13.0 以降と pnpm 11.9.0 が必要です。
 
 ```sh
 corepack enable

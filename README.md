@@ -46,7 +46,7 @@ The Wikipedia page [Uniform 4-polytope](https://en.wikipedia.org/wiki/Uniform_4-
 
 ## Development
 
-Node.js 20.19 or later and pnpm 11.9.0 are required.
+Node.js 22.13.0 or later and pnpm 11.9.0 are required.
 
 ```sh
 corepack enable
