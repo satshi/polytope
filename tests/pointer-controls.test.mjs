@@ -53,7 +53,6 @@ function createViewer() {
             this.applied.push(matrix.clone());
             this.matrix.multiply(matrix);
         },
-        projectVertices() {},
         checkVisibility() {},
     };
     const context = vm.createContext({

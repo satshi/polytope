@@ -488,7 +488,6 @@ function setRotationMatrix(
 }
 
 function renderScene(): void {
-    polytope?.projectVertices();
     polytope?.checkVisibility();
     if (renderer && scene && camera) {
         renderer.render(scene, camera);

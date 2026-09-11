@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Vector4, Vector3 } from "three";
+import { Vector4 } from "three";
 import type { PrePolytope } from "./data-validation.js";
 
 export type { PrePolytope } from "./data-validation.js";
@@ -103,21 +103,11 @@ export function rotationMatrix4(angle: number, direction: number): THREE.Matrix4
 
 // ４次元から３次元への射影のクラス。
 class Projector {
-    pmatrix: THREE.Matrix4;
-    constructor() {
-        this.pmatrix = new THREE.Matrix4();
-    }
+    readonly pmatrix = new THREE.Matrix4();
+    readonly materials = makeMaterialTable(this.pmatrix);
+
     identity() {
         this.pmatrix.identity();
-    }
-    // v4を射影した後の値をv3に代入する。
-    project(v3: Vector3, v4: Vector4) {
-        const m = this.pmatrix.elements;
-        v3.set(
-            v4.x * m[0] + v4.y * m[1] + v4.z * m[2] + v4.w * m[3],
-            v4.x * m[4] + v4.y * m[5] + v4.z * m[6] + v4.w * m[7],
-            v4.x * m[8] + v4.y * m[9] + v4.z * m[10] + v4.w * m[11],
-        );
     }
     // 胞の法線ベクトルを入れて見えるか否かを返す。
     ifVisible(normal: Vector4): boolean {
@@ -126,27 +116,44 @@ class Projector {
     }
     // ４次元の行列（回転を想定）をかける。
     applyMatrix4(m: THREE.Matrix4) {
-        this.pmatrix = this.pmatrix.multiply(m);
+        this.pmatrix.multiply(m);
+    }
+    dispose() {
+        for (const material of this.materials) {
+            material.dispose();
+        }
     }
 }
 
 //  使う色の表。11種類用意している。
 const colorTable = [new THREE.Color(1.0, 0.4, 1.0), new THREE.Color(0.87, 0.87, 0.0), new THREE.Color(0.0, 1.0, 1.0), new THREE.Color(1.0, 0.4, 0.1), new THREE.Color(0.25, 1.0, 0.25), new THREE.Color(0.55, 0.55, 1.0), new THREE.Color(1.0, 0.7, 0.1), new THREE.Color(0.1, 0.7, 1.0), new THREE.Color(0.775, 0.4, 1.0), new THREE.Color(1.0, 0.1, 0.7), new THREE.Color(0.1, 1.0, 0.7)];
 
-// 上の色の表を元にしてMaterialの表を作る。
-const materialTable = colorTable.map(c => {
-    // With flatShading, Three.js derives face normals in the fragment shader.
-    // This remains correct while projected positions change every frame,
-    // without an expensive CPU-side computeVertexNormals() call.
-    const material = new THREE.MeshPhongMaterial({
-        side: THREE.DoubleSide, specular: 0x888888, shininess: 30, flatShading: true,
+// 同じ多胞体の胞でマテリアルと射影行列を共有する。
+function makeMaterialTable(projection: THREE.Matrix4): THREE.MeshPhongMaterial[] {
+    return colorTable.map(color => {
+        // Derivative-based flat shading uses the GPU-projected positions for
+        // face normals, so no CPU normal updates are needed either.
+        const material = new THREE.MeshPhongMaterial({
+            color, side: THREE.DoubleSide, specular: 0x888888, shininess: 30, flatShading: true,
+        });
+        material.onBeforeCompile = shader => {
+            shader.uniforms.projection4D = { value: projection };
+            shader.vertexShader = `
+uniform mat4 projection4D;
+attribute float positionW;
+${shader.vertexShader}`.replace(
+                '#include <begin_vertex>',
+                // The projector stores basis vectors in matrix columns. A row
+                // vector multiplication preserves the original rotation direction.
+                'vec3 transformed = ( vec4( position, positionW ) * projection4D ).xyz;',
+            );
+        };
+        material.customProgramCacheKey = () => 'polytope-projection-4d-v1';
+        return material;
     });
-    material.color = c;
-    return material;
-});
+}
 
 // ４次元中の３次元多面体のクラス。４次元多胞体の胞を表すのに使う。
-const tempVec3 = new THREE.Vector3();
 export class Facet {
     vertices: Vector4[] = [];
     faces: number[][] = [];
@@ -163,7 +170,6 @@ export class Facet {
         const indices = polyhedronFaces(this.faces);
         this.geometry.setIndex(indices);
         this.initGeometryVertices();
-        this.projectVertices();
         this.makeMesh();
     }
     // 枠のgeometryを作る。
@@ -199,31 +205,29 @@ export class Facet {
         this.geometry.setIndex(frameFaces);
         this.initGeometryVertices();
         this.makeMesh();
-        this.projectVertices();
     }
-    // とりあえず３次元頂点を意味のない値で初期化。
+    // ４次元の頂点を一度だけ転送し、回転・射影は頂点シェーダーで行う。
     initGeometryVertices() {
         if (!this.geometry) {
             throw new Error("Geometry is not initialized.");
         }
         const vertices3 = new Float32Array(this.triangleVertices.length * 3);
+        const verticesW = new Float32Array(this.triangleVertices.length);
+        let radiusSquared = 0;
+        this.triangleVertices.forEach((vertex, i) => {
+            vertices3[i * 3] = vertex.x;
+            vertices3[i * 3 + 1] = vertex.y;
+            vertices3[i * 3 + 2] = vertex.z;
+            verticesW[i] = vertex.w;
+            radiusSquared = Math.max(radiusSquared, vertex.lengthSq());
+        });
         this.geometry.setAttribute('position', new THREE.BufferAttribute(vertices3, 3));
-    }
-
-
-
-
-    // 射影した頂点を作る。
-    projectVertices() {
-        if (!this.geometry || !this.projector) {
-            throw new Error("Facet is not initialized.");
-        }
-        const positions = this.geometry.attributes.position;
-        for (let i = 0; i < this.triangleVertices.length; i++) {
-            this.projector.project(tempVec3, this.triangleVertices[i]);
-            positions.setXYZ(i, tempVec3.x, tempVec3.y, tempVec3.z);
-        }
-        positions.needsUpdate = true;
+        this.geometry.setAttribute('positionW', new THREE.BufferAttribute(verticesW, 1));
+        // Rotation preserves 4D length and orthographic projection only reduces
+        // it. Static xyz bounds would miss vertices rotated in from the w axis.
+        this.geometry.boundingSphere = new THREE.Sphere(
+            new THREE.Vector3(), Math.sqrt(radiusSquared) + EPSILON,
+        );
     }
     // 胞が見える方にあるかのチェック
     checkVisibility() {
@@ -234,10 +238,10 @@ export class Facet {
     }
     // メッシュを作る
     makeMesh() {
-        if (!this.geometry) {
-            throw new Error("Geometry is not initialized.");
+        if (!this.geometry || !this.projector) {
+            throw new Error("Facet is not initialized.");
         }
-        this.mesh = new THREE.Mesh(this.geometry, materialTable[this.faces.length % 11]);
+        this.mesh = new THREE.Mesh(this.geometry, this.projector.materials[this.faces.length % 11]);
     }
     // 破棄
     dispose() {
@@ -264,7 +268,6 @@ export class Polytope {
     // type はSolidかFrame
     initFromPrePolytope(prePolytope: PrePolytope, type: "Solid" | "Frame" = "Solid") {
         this.readJSONFile(prePolytope);
-        this.initProjector();
         this.makeFacetList();
         this.separate();
         if (type == "Solid") {
@@ -291,6 +294,7 @@ export class Polytope {
 
     // projectorを初期化。
     initProjector() {
+        this.projector.dispose();
         this.projector = new Projector();
     }
 
@@ -417,13 +421,6 @@ export class Polytope {
         return this;
     }
 
-    //すべての胞で射影
-    projectVertices() {
-        for (let f of this.facetList) {
-            f.projectVertices();
-        }
-        return this;
-    }
     //すべての胞で見えるかのチェック
     checkVisibility() {
         for (let f of this.facetList) {
@@ -446,6 +443,7 @@ export class Polytope {
         for (let f of this.facetList) {
             f.dispose();
         }
+        this.projector.dispose();
         return this;
     }
     //詳しい情報も加えたJSONファイルを出力
