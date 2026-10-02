@@ -84,7 +84,7 @@ test("automatic rotation uses elapsed time and caps long frames", () => {
 test("dynamic facets use Three.js derivative-based flat shading", async () => {
     const data = parsePrePolytope(await readJson(new URL("c5.json", DATA_DIRECTORY)));
     const polytope = new Polytope().initFromPrePolytope(data);
-    const mesh = polytope.facetList[0].mesh;
+    const mesh = polytope.object3D.children[0];
 
     assert.ok(mesh);
     assert.ok(mesh.material instanceof THREE.MeshPhongMaterial);
